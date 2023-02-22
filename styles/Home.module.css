@@ -7,6 +7,10 @@
   align-items: center;
 }
 
+.connected {
+  font-style: italic;
+}
+
 .title a {
   color: #0070f3;
   text-decoration: none;
