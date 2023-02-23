@@ -28,14 +28,13 @@ import { bytes } from "@ckb-lumos/codec";
 import { blockchain } from "@ckb-lumos/base";
 
 export default function Home() {
-  const [connected, setConnected] = useState(false);
   const [ckb, setCkb] = useState<any>();
   const [balance, setBalance] = useState(0);
   const [fullCells, setFullCells] = useState<Array<Cell>>([]);
-  const [receiver, serReceiver] = useState("");
-  const [receiverLock, serReceiverLock] = useState<Script>();
+  const [transferToAddress, setTransferToAddress] = useState("");
+  const [transferToLock, setTransferToLock] = useState<Script>();
   const [tansferAmount, setTansferAmount] = useState<number>();
-  const [receiveAddress, setReceiveAddress] = useState("");
+  const [receiveAddress, setReceiveAddress] = useState("click \"create\" to generate a new receive address");
 
   config.initializeConfig(config.predefined.AGGRON4);
   async function handleRefreshBalance() {
@@ -53,10 +52,10 @@ export default function Home() {
 
   async function handleReceiverChange(e) {
     const receiverAddress = e.target.value;
-    serReceiver(receiverAddress);
+    setTransferToAddress(receiverAddress);
     try {
       const receiverLock = helpers.parseAddress(receiverAddress);
-      serReceiverLock(receiverLock);
+      setTransferToLock(receiverLock);
     } catch (error) {}
   }
 
@@ -65,8 +64,8 @@ export default function Home() {
       await ckb.fullOwnership.getOffChainLocks({ change: "internal" })
     )[0];
     console.log("changeLock", changeLock);
-    console.log("target address", receiver);
-    console.log("target lock", receiverLock);
+    console.log("target address", transferToAddress);
+    console.log("target lock", transferToLock);
     console.log("transfer amount", tansferAmount);
     const preparedCells = [];
     const transferAmountBI = BI.from(tansferAmount).mul(10 ** 8);
@@ -89,7 +88,7 @@ export default function Home() {
     outputCells[0] = {
       cellOutput: {
         capacity: transferAmountBI.toHexString(),
-        lock: receiverLock,
+        lock: transferToLock,
       },
       data: "0x",
     };
@@ -150,7 +149,7 @@ export default function Home() {
     const txHash = await rpc.sendTransaction(tx);
     console.log("txHash", txHash);
   }
-  async function handleClick() {
+  async function handleConnect() {
     const windowCKB = (window as any).ckb;
     if (!windowCKB) {
       console.log("no nexus wallet found!");
@@ -192,13 +191,13 @@ export default function Home() {
             ) : (
               <Badge>
                 {" "}
-                <Button onClick={handleClick} colorScheme='teal' >Connect Wallet</Button>
+                <Button onClick={handleConnect} colorScheme='teal' >Connect Wallet</Button>
               </Badge>
             )}
           </div>
           <Text fontSize='xl' fontWeight={500} marginBottom='1rem'>CKB BALANCE: {(balance/(10 ** 8)).toFixed(2)}</Text>
           <Button onClick={handleRefreshBalance}>Refresh</Button>
-          <Box maxHeight='32rem' overflowY='scroll'>
+          <Box maxHeight='24rem' overflowY='auto' marginBottom={4}>
             {fullCells.map((cell, i) => {
               return <CellCard {...cell} key={i} />;
             })}
@@ -208,7 +207,7 @@ export default function Home() {
             <FormLabel>Transfer To:</FormLabel>
             <Input
               type="text"
-              value={receiver}
+              value={transferToAddress}
               onChange={handleReceiverChange}
             />
             <FormLabel marginTop={2}>Transfer Amount:</FormLabel>
@@ -227,44 +226,6 @@ export default function Home() {
             <Button onClick={handleCreateReceiveAddress}>Create</Button>
             <Text>{receiveAddress}</Text>
           </Box>
-          <style jsx>{`
-            main {
-              padding: 5rem 0;
-              flex: 1;
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-              align-items: center;
-            }
-            footer {
-              width: 100%;
-              height: 100px;
-              border-top: 1px solid #eaeaea;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-            }
-            footer img {
-              margin-left: 0.5rem;
-            }
-            footer a {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              text-decoration: none;
-              color: inherit;
-            }
-            code {
-              background: #fafafa;
-              border-radius: 5px;
-              padding: 0.75rem;
-              font-size: 1.1rem;
-              font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
-                DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New,
-                monospace;
-            }
-          `}</style>
-
           <style jsx global>{`
             html,
             body {

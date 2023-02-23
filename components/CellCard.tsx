@@ -1,10 +1,7 @@
 import { Box, Badge } from '@chakra-ui/react'
 import { BI, Cell } from '@ckb-lumos/lumos'
 
-type Props = Cell & {
-  hilight?: boolean
-}
-export function CellCard(prop: Props) {
+export function CellCard(prop: Cell) {
   const property = {
     capacity: prop.cellOutput.capacity,
     args: prop.cellOutput.lock.args,
