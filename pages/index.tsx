@@ -143,9 +143,11 @@ export default function Home() {
       const secp256k1Witness = bytes.hexify(
         blockchain.WitnessArgs.pack(witnessArgs)
       );
-      txSkeleton = txSkeleton.update("witnesses", (witnesses) =>
-        witnesses.set(0, secp256k1Witness)
-      );
+      for (let i = 0; i < preparedCells.length; i++) {
+        txSkeleton = txSkeleton.update("witnesses", (witnesses) =>
+          witnesses.set(i, secp256k1Witness)
+        );
+      }
 
       const tx = helpers.createTransactionFromSkeleton(txSkeleton);
       console.log("tx to sign:", tx);
@@ -174,7 +176,9 @@ export default function Home() {
             <Link
               href={`https://pudge.explorer.nervos.org/transaction/${txHash}`}
             >
-              <Text fontStyle='initial' fontWeight={500}>explorer</Text>
+              <Text fontStyle="initial" fontWeight={500}>
+                explorer
+              </Text>
             </Link>{" "}
             to check tx status.
           </Text>
@@ -270,7 +274,11 @@ export default function Home() {
             >
               <NumberInputField />
             </NumberInput>
-            <Button marginTop={4} onClick={handleTransfer} isLoading={transfering}>
+            <Button
+              marginTop={4}
+              onClick={handleTransfer}
+              isLoading={transfering}
+            >
               Transfer
             </Button>
           </FormControl>
