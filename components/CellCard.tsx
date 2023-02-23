@@ -11,7 +11,7 @@ export function CellCard(prop: Props) {
   }
 
   return (
-    <Box maxW='sm' borderWidth='1px' borderRadius='lg' overflow='hidden'>
+    <Box maxW='lg' borderWidth='1px' borderRadius='lg' overflow='hidden' margin='1rem'>
       <Box p='6'>
         <Box display='flex' alignItems='baseline'>
           <Badge borderRadius='full' px='2' colorScheme='teal'>

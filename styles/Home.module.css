@@ -7,8 +7,9 @@
   align-items: center;
 }
 
-.connected {
-  font-style: italic;
+.connect {
+  margin: 20px 10px;
+  height: 40px;
 }
 
 .title a {

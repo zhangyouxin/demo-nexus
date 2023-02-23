@@ -1,20 +1,17 @@
 import * as React from "react";
 import {
+  Badge,
   ChakraProvider,
   FormControl,
-  FormErrorMessage,
-  FormHelperText,
   FormLabel,
   Input,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
   NumberInput,
   NumberInputField,
-  NumberInputStepper,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import { useState } from "react";
-import { Container, Button, Box } from "@chakra-ui/react";
+import { Container, Button, Box, Text } from "@chakra-ui/react";
+import { CheckCircleIcon } from "@chakra-ui/icons";
 import styles from "../styles/Home.module.css";
 import { CellCard } from "../components/CellCard";
 import {
@@ -37,8 +34,8 @@ export default function Home() {
   const [fullCells, setFullCells] = useState<Array<Cell>>([]);
   const [receiver, serReceiver] = useState("");
   const [receiverLock, serReceiverLock] = useState<Script>();
-  const [receiverErr, serReceiverErr] = useState(false);
   const [tansferAmount, setTansferAmount] = useState<number>();
+  const [receiveAddress, setReceiveAddress] = useState("");
 
   config.initializeConfig(config.predefined.AGGRON4);
   async function handleRefreshBalance() {
@@ -60,10 +57,7 @@ export default function Home() {
     try {
       const receiverLock = helpers.parseAddress(receiverAddress);
       serReceiverLock(receiverLock);
-      serReceiverErr(false);
-    } catch (error) {
-      serReceiverErr(true);
-    }
+    } catch (error) {}
   }
 
   async function handleTransfer() {
@@ -165,6 +159,16 @@ export default function Home() {
     const ckb = await windowCKB.enable();
     setCkb(ckb);
   }
+  async function handleCreateReceiveAddress() {
+    if (!ckb) {
+      return;
+    }
+    const nextLock = (await ckb.fullOwnership.getOffChainLocks({}))[0];
+    const nextAddress = helpers.generateAddress(nextLock);
+    console.log("next lock", nextLock);
+    console.log("next address", nextAddress);
+    setReceiveAddress(nextAddress);
+  }
   function parse(valueString: string): React.SetStateAction<number> {
     return Number(valueString);
   }
@@ -178,19 +182,23 @@ export default function Home() {
             <link rel="icon" href="/favicon.ico" />
           </Head>
 
-          <h1>
-            Nexus Wallet{" "}
-            <span className={styles.connected}>
-              {!!ckb ? "Connected" : "Not Connected"}
-            </span>
-          </h1>
-          <h2>
-            <Button onClick={handleClick}>Connect Wallet</Button>
-          </h2>
-
-          <Box>
-            Balance is: {balance}
-            <Button onClick={handleRefreshBalance}>refresh</Button>
+          <Text fontSize='4xl'>Full Ownership Demo</Text>
+          <div className={styles.connect}>
+            {!!ckb ? (
+              <Badge fontSize='xl' fontStyle='italic'>
+                Connected {"  "}
+                <CheckCircleIcon color="green.500" />
+              </Badge>
+            ) : (
+              <Badge>
+                {" "}
+                <Button onClick={handleClick}>Connect Wallet</Button>
+              </Badge>
+            )}
+          </div>
+          <Text fontSize='xl' fontWeight={500} marginBottom='1rem'>CKB BALANCE: {(balance/(10 ** 8)).toFixed(2)}</Text>
+          <Button onClick={handleRefreshBalance}>refresh</Button>
+          <Box maxHeight='32rem' overflowY='scroll'>
             {fullCells.map((cell, i) => {
               return <CellCard {...cell} key={i} />;
             })}
@@ -203,16 +211,22 @@ export default function Home() {
               value={receiver}
               onChange={handleReceiverChange}
             />
-            <FormLabel>Transfer Amount:</FormLabel>
+            <FormLabel marginTop={2}>Transfer Amount:</FormLabel>
             <NumberInput
               onChange={(valueString) => setTansferAmount(parse(valueString))}
               value={tansferAmount}
             >
               <NumberInputField />
             </NumberInput>
-            <Button onClick={handleTransfer}>Transfer</Button>
+            <Button marginTop={4} onClick={handleTransfer}>Transfer</Button>
           </FormControl>
 
+          <Box width='100%' border='1px' borderColor='gray.200' borderRadius={4} marginTop={4} padding={4}
+          textAlign='center' lineHeight='40px'>
+            <Text fontSize='2xl' fontWeight={500}> RECEIVE </Text>
+            <Button onClick={handleCreateReceiveAddress}>Create</Button>
+            <Text>{receiveAddress}</Text>
+          </Box>
           <style jsx>{`
             main {
               padding: 5rem 0;
