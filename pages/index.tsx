@@ -192,12 +192,12 @@ export default function Home() {
             ) : (
               <Badge>
                 {" "}
-                <Button onClick={handleClick}>Connect Wallet</Button>
+                <Button onClick={handleClick} colorScheme='teal' >Connect Wallet</Button>
               </Badge>
             )}
           </div>
           <Text fontSize='xl' fontWeight={500} marginBottom='1rem'>CKB BALANCE: {(balance/(10 ** 8)).toFixed(2)}</Text>
-          <Button onClick={handleRefreshBalance}>refresh</Button>
+          <Button onClick={handleRefreshBalance}>Refresh</Button>
           <Box maxHeight='32rem' overflowY='scroll'>
             {fullCells.map((cell, i) => {
               return <CellCard {...cell} key={i} />;
