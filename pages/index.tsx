@@ -9,7 +9,7 @@ import {
   NumberInputField,
 } from "@chakra-ui/react";
 import Head from "next/head";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Container, Button, Box, Text, useToast, Link } from "@chakra-ui/react";
 import { CheckCircleIcon } from "@chakra-ui/icons";
 import styles from "../styles/Home.module.css";
@@ -40,6 +40,13 @@ export default function Home() {
     'click "create" to generate a new receive address'
   );
   const toast = useToast();
+  useEffect(() => {
+    handleConnect();
+  }, []);
+  useEffect(() => {
+    handleRefreshBalance();
+    handleCreateReceiveAddress();
+  }, [ckb]);
 
   config.initializeConfig(config.predefined.AGGRON4);
   async function handleRefreshBalance() {
