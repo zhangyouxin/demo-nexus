@@ -260,7 +260,7 @@ export default function Home() {
                   description: (
                     <Text>
                       You can download Nexus-Wallet Chrome Extension
-                      <Link href="https://github.com/zhangyouxin/demo-nexus/releases/tag/0.0.1">
+                      <Link href="https://github.com/zhangyouxin/demo-nexus/releases/tag/0.0.2">
                         <Text fontStyle="initial" fontWeight={500}>
                           HERE
                         </Text>
