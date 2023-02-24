@@ -10,8 +10,16 @@ import {
 } from "@chakra-ui/react";
 import Head from "next/head";
 import { useEffect, useState } from "react";
-import { Container, Button, Box, Text, useToast, Link } from "@chakra-ui/react";
-import { CheckCircleIcon } from "@chakra-ui/icons";
+import {
+  Container,
+  Button,
+  Box,
+  Text,
+  useToast,
+  Link,
+  IconButton,
+} from "@chakra-ui/react";
+import { CheckCircleIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 import styles from "../styles/Home.module.css";
 import { CellCard } from "../components/CellCard";
 import {
@@ -238,7 +246,34 @@ export default function Home() {
             <link rel="icon" href="/favicon.ico" />
           </Head>
 
-          <Text fontSize="4xl">Full Ownership Demo</Text>
+          <Text fontSize="4xl">
+            Full Ownership Demo
+            <IconButton
+              marginLeft={2}
+              borderRadius={40}
+              colorScheme="gray"
+              aria-label="Search database"
+              icon={<QuestionOutlineIcon />}
+              onClick={() => {
+                toast({
+                  title: "Help",
+                  description: (
+                    <Text>
+                      You can download Nexus-Wallet Chrome Extension
+                      <Link href="https://github.com/zhangyouxin/demo-nexus/releases/tag/0.0.1">
+                        <Text fontStyle="initial" fontWeight={500}>
+                          HERE
+                        </Text>
+                      </Link>{" "}
+                    </Text>
+                  ),
+                  status: "info",
+                  duration: 3_000,
+                  isClosable: true,
+                });
+              }}
+            />
+          </Text>
           <div className={styles.connect}>
             {!!ckb ? (
               <Badge fontSize="xl" fontStyle="italic">
