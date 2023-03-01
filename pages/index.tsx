@@ -82,7 +82,9 @@ export default function Home() {
     try {
       const receiverLock = helpers.parseAddress(receiverAddress);
       setTransferToLock(receiverLock);
-    } catch (error) {}
+    } catch (error) {
+      console.log("handleReceiverChange error", error);
+    }
   }
 
   async function handleTransfer() {
@@ -153,7 +155,7 @@ export default function Home() {
       }
       const witnessArgs: WitnessArgs = {
         /* 65-byte zeros in hex */
-        lock: "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        lock: bytes.hexify(new Uint8Array(65)),
       };
       const secp256k1Witness = bytes.hexify(
         blockchain.WitnessArgs.pack(witnessArgs)
@@ -163,7 +165,6 @@ export default function Home() {
           witnesses.set(i, secp256k1Witness)
         );
       }
-
       const tx = helpers.createTransactionFromSkeleton(txSkeleton);
       console.log("tx to sign:", tx);
 
@@ -227,9 +228,14 @@ export default function Home() {
     if (!ckb) {
       return;
     }
-    const nextLock = (await ckb.fullOwnership.getOffChainLocks({}))[0];
-    const nextAddress = helpers.generateAddress(nextLock);
+    const nextLocks = await ckb.fullOwnership.getOffChainLocks({});
+    if(!nextLocks.length) {
+      console.error('No lock found');
+      return
+    }
+    const nextLock = nextLocks[Math.floor(Math.random() * nextLocks.length)]
     console.log("next lock", nextLock);
+    const nextAddress = helpers.encodeToAddress(nextLock, {config: config.predefined.AGGRON4});
     console.log("next address", nextAddress);
     setReceiveAddress(nextAddress);
   }
@@ -260,7 +266,7 @@ export default function Home() {
                   description: (
                     <Text>
                       You can download Nexus-Wallet Chrome Extension
-                      <Link href="https://github.com/zhangyouxin/demo-nexus/releases/tag/0.0.2">
+                      <Link href="https://github.com/zhangyouxin/demo-nexus/releases/tag/0.0.3">
                         <Text fontStyle="initial" fontWeight={500}>
                           HERE
                         </Text>

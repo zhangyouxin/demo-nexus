@@ -8,10 +8,11 @@ import {
   Accordion,
   Text,
 } from "@chakra-ui/react";
-import { BI, Cell } from "@ckb-lumos/lumos";
+import { BI, Cell, config, helpers } from "@ckb-lumos/lumos";
 
 export function CellCard(prop: Cell) {
   const property = {
+    lock: prop.cellOutput.lock,
     capacity: prop.cellOutput.capacity,
     args: prop.cellOutput.lock.args,
     type: prop.cellOutput.type,
@@ -53,7 +54,16 @@ export function CellCard(prop: Cell) {
           letterSpacing="wide"
           fontSize="xs"
         >
-          ARGS:{property.args}
+          ADDRESS:{helpers.encodeToAddress(property.lock, {config: config.predefined.AGGRON4})}
+        </Box>
+        <Box
+          mt="1"
+          color="gray.500"
+          fontWeight="semibold"
+          letterSpacing="wide"
+          fontSize="xs"
+        >
+          LOCK_ARGS:{property.args}
         </Box>
         {property.type && (
           <Accordion allowToggle marginTop={4}>
