@@ -77,12 +77,12 @@ export default function Home() {
       });
       setFullCells(fullCells);
       setBalance(res);
+      setRefreshing(false);
       return fullCells;
     } catch (error) {
       setRefreshing(false);
       console.log("handleRefreshBalance error", error);
     }
-    setRefreshing(false);
   }
 
   async function handleReceiverChange(e) {
