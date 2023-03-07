@@ -52,25 +52,34 @@ export default function Home() {
     handleConnect();
   }, []);
   useEffect(() => {
-    handleRefreshBalance();
+    handleRefresh();
     handleCreateReceiveAddress();
   }, [ckb]);
 
   config.initializeConfig(config.predefined.AGGRON4);
-  async function handleRefreshBalance() {
+  async function handleRefresh(): Promise<Cell[]> {
     if (!ckb) {
       return;
     }
     setRefreshing(true);
     try {
       let res = 0;
-      const fullCells = (await ckb.fullOwnership.getLiveCells({})).objects;
+      let fullCells: Array<Cell> = [];
+      let liveCellsResult = await ckb.fullOwnership.getLiveCells({});
+      fullCells.push(...liveCellsResult.objects);
+      while(liveCellsResult.objects.length === 20) {
+        // loop if current page has 20 cells(maximum number of cells per page)
+        liveCellsResult = await ckb.fullOwnership.getLiveCells({ cursor: liveCellsResult.cursor });
+        fullCells.push(...liveCellsResult.objects);
+      }
       fullCells.forEach((cell) => {
         res += Number(cell.cellOutput.capacity);
       });
       setFullCells(fullCells);
       setBalance(res);
+      return fullCells;
     } catch (error) {
+      setRefreshing(false);
       console.log("handleRefreshBalance error", error);
     }
     setRefreshing(false);
@@ -88,11 +97,12 @@ export default function Home() {
   }
 
   async function handleTransfer() {
-    if (!ckb) {
+    if (!ckb || isNaN(Number(tansferAmount)) || tansferAmount < 64) {
       return;
     }
     setTransfering(true);
     try {
+      const newFullCells = await handleRefresh();
       const changeLock: Script = (
         await ckb.fullOwnership.getOffChainLocks({ change: "internal" })
       )[0];
@@ -103,11 +113,11 @@ export default function Home() {
       const preparedCells = [];
       const transferAmountBI = BI.from(tansferAmount).mul(10 ** 8);
       let prepareAmount = BI.from(0);
-      for (let i = 0; i < fullCells.length; i++) {
-        const cellCkbAmount = BI.from(fullCells[i].cellOutput.capacity);
-        preparedCells.push(fullCells[i]);
+      for (let i = 0; i < newFullCells.length; i++) {
+        const cellCkbAmount = BI.from(newFullCells[i].cellOutput.capacity);
+        preparedCells.push(newFullCells[i]);
         prepareAmount = prepareAmount.add(cellCkbAmount);
-        if (prepareAmount.gte(transferAmountBI)) {
+        if (prepareAmount.sub(1000).sub(64 * (10**8)).gte(transferAmountBI)) {
           break;
         }
       }
@@ -165,6 +175,8 @@ export default function Home() {
           witnesses.set(i, secp256k1Witness)
         );
       }
+      console.log("txSkeleton", helpers.transactionSkeletonToObject(txSkeleton));
+      
       const tx = helpers.createTransactionFromSkeleton(txSkeleton);
       console.log("tx to sign:", tx);
 
@@ -298,7 +310,7 @@ export default function Home() {
           <Text fontSize="xl" fontWeight={500} marginBottom="1rem">
             CKB BALANCE: {(balance / 10 ** 8).toFixed(2)}
           </Text>
-          <Button onClick={handleRefreshBalance} isLoading={refreshing}>
+          <Button onClick={handleRefresh} isLoading={refreshing}>
             Refresh
           </Button>
           <Box maxHeight="24rem" overflowY="auto" marginBottom={4}>
