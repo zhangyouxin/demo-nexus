@@ -8,14 +8,16 @@ import {
   Accordion,
   Text,
 } from "@chakra-ui/react";
-import { BI, Cell, config, helpers } from "@ckb-lumos/lumos";
+import { BI } from "@ckb-lumos/lumos";
+import { NCell } from "../common/types";
 
-export function CellCard(prop: Cell) {
+export function CellCard(prop: NCell) {
   const property = {
     lock: prop.cellOutput.lock,
     capacity: prop.cellOutput.capacity,
     args: prop.cellOutput.lock.args,
     type: prop.cellOutput.type,
+    address: prop.address,
   };
 
   return (
@@ -54,7 +56,7 @@ export function CellCard(prop: Cell) {
           letterSpacing="wide"
           fontSize="xs"
         >
-          ADDRESS:{helpers.encodeToAddress(property.lock, {config: config.predefined.AGGRON4})}
+          ADDRESS:{property.address}
         </Box>
         <Box
           mt="1"

@@ -17,9 +17,8 @@ import {
   Text,
   useToast,
   Link,
-  IconButton,
 } from "@chakra-ui/react";
-import { CheckCircleIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
+import { CheckCircleIcon } from "@chakra-ui/icons";
 import styles from "../styles/Home.module.css";
 import { CellCard } from "../components/CellCard";
 import {
@@ -34,19 +33,26 @@ import {
 } from "@ckb-lumos/lumos";
 import { bytes } from "@ckb-lumos/codec";
 import { blockchain } from "@ckb-lumos/base";
+import { DownloadInfoButton } from "../components/DownloadInfoButton";
+import { NModal } from "../components/NModal";
+import { AddressBook } from "../components/AddressBook";
+import { NCell, NScript } from "../common/types";
+import { getOffChainLocks, getOnChainLocks } from "../common/nexusTools";
 
 export default function Home() {
   const [ckb, setCkb] = useState<any>();
   const [balance, setBalance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [transfering, setTransfering] = useState(false);
-  const [fullCells, setFullCells] = useState<Array<Cell>>([]);
+  const [fullCells, setFullCells] = useState<Array<NCell>>([]);
   const [transferToAddress, setTransferToAddress] = useState("");
   const [transferToLock, setTransferToLock] = useState<Script>();
   const [tansferAmount, setTansferAmount] = useState<number>();
   const [receiveAddress, setReceiveAddress] = useState(
     'click "create" to generate a new receive address'
   );
+  const [offChainLockInfos, setOffChainLockInfos] = useState<Array<NScript>>([]);
+  const [onChainLockInfos, setOnChainLockInfos] = useState<Array<NScript>>([]);
   const toast = useToast();
   useEffect(() => {
     handleConnect();
@@ -56,7 +62,12 @@ export default function Home() {
     handleCreateReceiveAddress();
   }, [ckb]);
 
+  // TODO make config configurable
   config.initializeConfig(config.predefined.AGGRON4);
+  async function getConfig(): Promise<config.Config> {
+    // TODO return ckb.configService.getConfig();
+    return Promise.resolve(config.getConfig());
+  }
   async function handleRefresh(): Promise<Cell[]> {
     if (!ckb) {
       return;
@@ -64,17 +75,48 @@ export default function Home() {
     setRefreshing(true);
     try {
       let res = 0;
-      let fullCells: Array<Cell> = [];
+      let fullCells: Array<NCell> = [];
       let liveCellsResult = await ckb.fullOwnership.getLiveCells({});
       fullCells.push(...liveCellsResult.objects);
-      while(liveCellsResult.objects.length === 20) {
+      while (liveCellsResult.objects.length === 20) {
         // loop if current page has 20 cells(maximum number of cells per page)
-        liveCellsResult = await ckb.fullOwnership.getLiveCells({ cursor: liveCellsResult.cursor });
+        liveCellsResult = await ckb.fullOwnership.getLiveCells({
+          cursor: liveCellsResult.cursor,
+        });
         fullCells.push(...liveCellsResult.objects);
       }
       fullCells.forEach((cell) => {
         res += Number(cell.cellOutput.capacity);
       });
+      const networkConfig = await getConfig();
+      fullCells = fullCells.map((cell): NCell => {
+        return {
+          ...cell,
+          address: helpers.encodeToAddress(cell.cellOutput.lock, {
+            config: networkConfig,
+          }),
+        };
+      });
+      const offChainLocks: Script[] = await getOffChainLocks(ckb);
+      const onChainExternalLocks: Script[] = await getOnChainLocks(ckb, 'external');
+      const onChainInternalLocks: Script[] = await getOnChainLocks(ckb, 'internal');
+      
+      setOffChainLockInfos(
+        offChainLocks.map(
+          (lock): NScript => ({
+            lock,
+            address: helpers.encodeToAddress(lock, { config: networkConfig }),
+          })
+        )
+      );
+      setOnChainLockInfos(
+        [...onChainExternalLocks, ...onChainInternalLocks].map(
+          (lock): NScript => ({
+            lock,
+            address: helpers.encodeToAddress(lock, { config: networkConfig }),
+          })
+        )
+      );
       setFullCells(fullCells);
       setBalance(res);
       setRefreshing(false);
@@ -117,7 +159,12 @@ export default function Home() {
         const cellCkbAmount = BI.from(newFullCells[i].cellOutput.capacity);
         preparedCells.push(newFullCells[i]);
         prepareAmount = prepareAmount.add(cellCkbAmount);
-        if (prepareAmount.sub(1000).sub(64 * (10**8)).gte(transferAmountBI)) {
+        if (
+          prepareAmount
+            .sub(1000)
+            .sub(64 * 10 ** 8)
+            .gte(transferAmountBI)
+        ) {
           break;
         }
       }
@@ -164,7 +211,6 @@ export default function Home() {
         );
       }
       const witnessArgs: WitnessArgs = {
-        /* 65-byte zeros in hex */
         lock: bytes.hexify(new Uint8Array(65)),
       };
       const secp256k1Witness = bytes.hexify(
@@ -175,8 +221,11 @@ export default function Home() {
           witnesses.set(i, secp256k1Witness)
         );
       }
-      console.log("txSkeleton", helpers.transactionSkeletonToObject(txSkeleton));
-      
+      console.log(
+        "txSkeleton",
+        helpers.transactionSkeletonToObject(txSkeleton)
+      );
+
       const tx = helpers.createTransactionFromSkeleton(txSkeleton);
       console.log("tx to sign:", tx);
 
@@ -241,13 +290,15 @@ export default function Home() {
       return;
     }
     const nextLocks = await ckb.fullOwnership.getOffChainLocks({});
-    if(!nextLocks.length) {
-      console.error('No lock found');
-      return
+    if (!nextLocks.length) {
+      console.error("No lock found");
+      return;
     }
-    const nextLock = nextLocks[Math.floor(Math.random() * nextLocks.length)]
+    const nextLock = nextLocks[Math.floor(Math.random() * nextLocks.length)];
     console.log("next lock", nextLock);
-    const nextAddress = helpers.encodeToAddress(nextLock, {config: config.predefined.AGGRON4});
+    const nextAddress = helpers.encodeToAddress(nextLock, {
+      config: config.predefined.AGGRON4,
+    });
     console.log("next address", nextAddress);
     setReceiveAddress(nextAddress);
   }
@@ -265,32 +316,7 @@ export default function Home() {
           </Head>
 
           <Text fontSize="4xl">
-            Full Ownership Demo
-            <IconButton
-              marginLeft={2}
-              borderRadius={40}
-              colorScheme="gray"
-              aria-label="Search database"
-              icon={<QuestionOutlineIcon />}
-              onClick={() => {
-                toast({
-                  title: "Help",
-                  description: (
-                    <Text>
-                      You can download Nexus-Wallet Chrome Extension
-                      <Link href="https://github.com/zhangyouxin/demo-nexus/releases/tag/0.1.0">
-                        <Text fontStyle="initial" fontWeight={500}>
-                          HERE
-                        </Text>
-                      </Link>{" "}
-                    </Text>
-                  ),
-                  status: "info",
-                  duration: 3_000,
-                  isClosable: true,
-                });
-              }}
-            />
+            Full Ownership Demo <DownloadInfoButton />
           </Text>
           <div className={styles.connect}>
             {!!ckb ? (
@@ -308,11 +334,25 @@ export default function Home() {
             )}
           </div>
           <Text fontSize="xl" fontWeight={500} marginBottom="1rem">
-            CKB BALANCE: {(balance / 10 ** 8).toFixed(2)}
+            BALANCE: {(Math.floor(balance / 10 ** 6) / 100).toFixed(2)} CKB
+            <Button
+              onClick={handleRefresh}
+              isLoading={refreshing}
+              marginLeft={4}
+            >
+              Refresh
+            </Button>
           </Text>
-          <Button onClick={handleRefresh} isLoading={refreshing}>
-            Refresh
-          </Button>
+
+          <NModal title="Address Book">
+            <AddressBook
+              offChainLockInfos={offChainLockInfos}
+              onChainLockInfos={onChainLockInfos}
+              cells={fullCells}
+            />
+          </NModal>
+      
+
           <Box maxHeight="24rem" overflowY="auto" marginBottom={4}>
             {fullCells.length === 0 && <Text>No live cells found yet.</Text>}
             {fullCells.map((cell, i) => {
