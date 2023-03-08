@@ -51,14 +51,19 @@ export function TransferBook() {
                 </Tooltip>
               </Td>
               <Td>{item.amount} CKB</Td>
-              <Td >
+              <Td>
                 <Tooltip label={item.description}>
-                  <Text textOverflow="ellipsis" overflow="hidden" maxWidth="200px"> {item.description || "-"}</Text>
+                  <Text
+                    textOverflow="ellipsis"
+                    overflow="hidden"
+                    maxWidth="200px"
+                  >
+                    {" "}
+                    {item.description || "-"}
+                  </Text>
                 </Tooltip>
               </Td>
-              <Td>
-                    {item.time}
-              </Td>
+              <Td>{item.time}</Td>
               <Td>
                 <Link
                   href={`https://pudge.explorer.nervos.org/transaction/${item.txHash}`}

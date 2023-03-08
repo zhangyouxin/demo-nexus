@@ -30,7 +30,11 @@ import { DownloadInfoButton } from "../components/DownloadInfoButton";
 import { NModal } from "../components/NModal";
 import { AddressBook } from "../components/AddressBook";
 import { NCell, NScript } from "../common/types";
-import { getOffChainLocks, getOnChainLocks } from "../common/nexusTools";
+import {
+  getAllLiveCells,
+  getOffChainLocks,
+  getOnChainLocks,
+} from "../common/nexusTools";
 import { useLocalStorage } from "react-use";
 import { TransferBook } from "../components/TransferBook";
 
@@ -46,9 +50,6 @@ export default function Home() {
   const [description, setDescription] = useState("");
   const [transferToLock, setTransferToLock] = useState<Script>();
   const [tansferAmount, setTansferAmount] = useState<number>();
-  const [receiveAddress, setReceiveAddress] = useState(
-    'click "create" to generate a new receive address'
-  );
   const [offChainLockInfos, setOffChainLockInfos] = useState<Array<NScript>>(
     []
   );
@@ -60,7 +61,6 @@ export default function Home() {
   }, []);
   useEffect(() => {
     handleRefresh();
-    handleCreateReceiveAddress();
   }, [ckb]);
 
   // TODO make config configurable
@@ -76,21 +76,13 @@ export default function Home() {
     setRefreshing(true);
     try {
       let res = 0;
-      let fullCells: Array<NCell> = [];
-      let liveCellsResult = await ckb.fullOwnership.getLiveCells({});
-      fullCells.push(...liveCellsResult.objects);
-      while (liveCellsResult.objects.length === 20) {
-        // loop if current page has 20 cells(maximum number of cells per page)
-        liveCellsResult = await ckb.fullOwnership.getLiveCells({
-          cursor: liveCellsResult.cursor,
-        });
-        fullCells.push(...liveCellsResult.objects);
-      }
+      let fullCells: Array<Cell> = await getAllLiveCells(ckb);
+
       fullCells.forEach((cell) => {
         res += Number(cell.cellOutput.capacity);
       });
       const networkConfig = await getConfig();
-      fullCells = fullCells.map((cell): NCell => {
+      const fullNCells = fullCells.map((cell): NCell => {
         return {
           ...cell,
           address: helpers.encodeToAddress(cell.cellOutput.lock, {
@@ -124,7 +116,7 @@ export default function Home() {
           })
         )
       );
-      setFullCells(fullCells);
+      setFullCells(fullNCells);
       setBalance(res);
       setRefreshing(false);
       return fullCells;
@@ -303,24 +295,8 @@ export default function Home() {
     const ckb = await windowCKB.enable();
     setCkb(ckb);
   }
-  async function handleCreateReceiveAddress() {
-    if (!ckb) {
-      return;
-    }
-    const nextLocks = await ckb.fullOwnership.getOffChainLocks({});
-    if (!nextLocks.length) {
-      console.error("No lock found");
-      return;
-    }
-    const nextLock = nextLocks[Math.floor(Math.random() * nextLocks.length)];
-    console.log("next lock", nextLock);
-    const nextAddress = helpers.encodeToAddress(nextLock, {
-      config: config.predefined.AGGRON4,
-    });
-    console.log("next address", nextAddress);
-    setReceiveAddress(nextAddress);
-  }
-  function parse(valueString: string): React.SetStateAction<number> {
+
+  function parseNumber(valueString: string): React.SetStateAction<number> {
     return Number(valueString);
   }
 
@@ -383,7 +359,9 @@ export default function Home() {
               Transfer Amount<span style={{ color: "red" }}>*</span>:
             </FormLabel>
             <NumberInput
-              onChange={(valueString) => setTansferAmount(parse(valueString))}
+              onChange={(valueString) =>
+                setTansferAmount(parseNumber(valueString))
+              }
               value={tansferAmount}
               marginBottom={2}
             >
