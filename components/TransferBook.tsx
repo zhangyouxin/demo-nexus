@@ -35,9 +35,10 @@ export function TransferBook() {
       <Table variant="striped" colorScheme="teal">
         <Thead>
           <Tr>
-            <Th>To</Th>
+            <Th>Transfer To</Th>
             <Th>Amount</Th>
             <Th>Description</Th>
+            <Th>Time</Th>
             <Th>Explorer</Th>
           </Tr>
         </Thead>
@@ -50,13 +51,20 @@ export function TransferBook() {
                 </Tooltip>
               </Td>
               <Td>{item.amount} CKB</Td>
-              <Td>{item.description || "-"}</Td>
+              <Td >
+                <Tooltip label={item.description}>
+                  <Text textOverflow="ellipsis" overflow="hidden" maxWidth="200px"> {item.description || "-"}</Text>
+                </Tooltip>
+              </Td>
+              <Td>
+                    {item.time}
+              </Td>
               <Td>
                 <Link
                   href={`https://pudge.explorer.nervos.org/transaction/${item.txHash}`}
                 >
                   <Text fontStyle="initial" fontWeight={500}>
-                    {formatDisplayHash(item.txHash)}
+                    Explorer
                   </Text>
                 </Link>{" "}
               </Td>
@@ -67,6 +75,7 @@ export function TransferBook() {
               .fill(null)
               .map((_, index) => (
                 <Tr key={index}>
+                  <Td>{"-"}</Td>
                   <Td>{"-"}</Td>
                   <Td>{"-"}</Td>
                   <Td>{"-"}</Td>
