@@ -10,14 +10,7 @@ import {
 } from "@chakra-ui/react";
 import Head from "next/head";
 import { useEffect, useState } from "react";
-import {
-  Container,
-  Button,
-  Box,
-  Text,
-  useToast,
-  Link,
-} from "@chakra-ui/react";
+import { Container, Button, Box, Text, useToast, Link } from "@chakra-ui/react";
 import { CheckCircleIcon } from "@chakra-ui/icons";
 import styles from "../styles/Home.module.css";
 import { CellCard } from "../components/CellCard";
@@ -38,21 +31,29 @@ import { NModal } from "../components/NModal";
 import { AddressBook } from "../components/AddressBook";
 import { NCell, NScript } from "../common/types";
 import { getOffChainLocks, getOnChainLocks } from "../common/nexusTools";
+import { useLocalStorage } from "react-use";
+import { TransferBook } from "../components/TransferBook";
 
 export default function Home() {
+  const [transferBookItems, setTransferBookItems, removeTransferBookItems] =
+    useLocalStorage("nexus-transfer-book", []);
   const [ckb, setCkb] = useState<any>();
   const [balance, setBalance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [transfering, setTransfering] = useState(false);
   const [fullCells, setFullCells] = useState<Array<NCell>>([]);
   const [transferToAddress, setTransferToAddress] = useState("");
+  const [description, setDescription] = useState("");
   const [transferToLock, setTransferToLock] = useState<Script>();
   const [tansferAmount, setTansferAmount] = useState<number>();
   const [receiveAddress, setReceiveAddress] = useState(
     'click "create" to generate a new receive address'
   );
-  const [offChainLockInfos, setOffChainLockInfos] = useState<Array<NScript>>([]);
+  const [offChainLockInfos, setOffChainLockInfos] = useState<Array<NScript>>(
+    []
+  );
   const [onChainLockInfos, setOnChainLockInfos] = useState<Array<NScript>>([]);
+
   const toast = useToast();
   useEffect(() => {
     handleConnect();
@@ -98,9 +99,15 @@ export default function Home() {
         };
       });
       const offChainLocks: Script[] = await getOffChainLocks(ckb);
-      const onChainExternalLocks: Script[] = await getOnChainLocks(ckb, 'external');
-      const onChainInternalLocks: Script[] = await getOnChainLocks(ckb, 'internal');
-      
+      const onChainExternalLocks: Script[] = await getOnChainLocks(
+        ckb,
+        "external"
+      );
+      const onChainInternalLocks: Script[] = await getOnChainLocks(
+        ckb,
+        "internal"
+      );
+
       setOffChainLockInfos(
         offChainLocks.map(
           (lock): NScript => ({
@@ -245,10 +252,21 @@ export default function Home() {
       const rpc = new RPC("https://testnet.ckb.dev");
       const txHash = await rpc.sendTransaction(tx);
       console.log("txHash", txHash);
+      setTransferBookItems((prev) => [
+        {
+          txHash,
+          to: transferToAddress,
+          amount: tansferAmount,
+          time: new Date().toLocaleString(),
+          description,
+        },
+        ...prev,
+      ]);
+
       toast({
         title: "Transaction has been sent.",
         description: (
-          <Text>
+          <>
             Visit{" "}
             <Link
               href={`https://pudge.explorer.nervos.org/transaction/${txHash}`}
@@ -258,7 +276,7 @@ export default function Home() {
               </Text>
             </Link>{" "}
             to check tx status.
-          </Text>
+          </>
         ),
         status: "success",
         duration: 60_000,
@@ -344,15 +362,6 @@ export default function Home() {
             </Button>
           </Text>
 
-          <NModal title="Address Book">
-            <AddressBook
-              offChainLockInfos={offChainLockInfos}
-              onChainLockInfos={onChainLockInfos}
-              cells={fullCells}
-            />
-          </NModal>
-      
-
           <Box maxHeight="24rem" overflowY="auto" marginBottom={4}>
             {fullCells.length === 0 && <Text>No live cells found yet.</Text>}
             {fullCells.map((cell, i) => {
@@ -361,45 +370,50 @@ export default function Home() {
           </Box>
 
           <FormControl>
-            <FormLabel>Transfer To:</FormLabel>
+            <FormLabel>
+              Transfer To<span style={{ color: "red" }}>*</span>:
+            </FormLabel>
             <Input
               type="text"
               value={transferToAddress}
               onChange={handleReceiverChange}
+              marginBottom={2}
             />
-            <FormLabel marginTop={2}>Transfer Amount:</FormLabel>
+            <FormLabel>
+              Transfer Amount<span style={{ color: "red" }}>*</span>:
+            </FormLabel>
             <NumberInput
               onChange={(valueString) => setTansferAmount(parse(valueString))}
               value={tansferAmount}
+              marginBottom={2}
             >
               <NumberInputField />
             </NumberInput>
-            <Button
-              marginTop={4}
-              onClick={handleTransfer}
-              isLoading={transfering}
-            >
-              Transfer
-            </Button>
-          </FormControl>
+            <FormLabel>Description:</FormLabel>
+            <Input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              marginBottom={2}
+            />
 
-          <Box
-            width="100%"
-            border="1px"
-            borderColor="gray.200"
-            borderRadius={4}
-            marginTop={4}
-            padding={4}
-            textAlign="center"
-            lineHeight="40px"
-          >
-            <Text fontSize="2xl" fontWeight={500}>
-              {" "}
-              RECEIVE{" "}
-            </Text>
-            <Button onClick={handleCreateReceiveAddress}>Create</Button>
-            <Text>{receiveAddress}</Text>
-          </Box>
+            <Box display="flex" gap={4}>
+              <Button onClick={handleTransfer} isLoading={transfering}>
+                Transfer
+              </Button>
+              <NModal title="Transfer Book">
+                <TransferBook />
+              </NModal>
+
+              <NModal title="Address Book">
+                <AddressBook
+                  offChainLockInfos={offChainLockInfos}
+                  onChainLockInfos={onChainLockInfos}
+                  cells={fullCells}
+                />
+              </NModal>
+            </Box>
+          </FormControl>
           <style jsx global>{`
             html,
             body {
