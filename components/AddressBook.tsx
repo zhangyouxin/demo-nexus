@@ -11,6 +11,7 @@ import {
   Tooltip,
   useToast,
   Tfoot,
+  Box,
 } from "@chakra-ui/react";
 import { CopyIcon } from "@chakra-ui/icons";
 import { NCell, NScript } from "../common/types";
@@ -54,8 +55,8 @@ export function AddressBook(prop: AddressBookProp) {
     });
   }
   const currentPageItems = tableItems.slice(
-    pageIndex * 10,
-    (pageIndex + 1) * 10
+    pageIndex * DEFAULT_PAGE_SIZE,
+    (pageIndex + 1) * DEFAULT_PAGE_SIZE
   );
 
   return (
@@ -90,20 +91,18 @@ export function AddressBook(prop: AddressBookProp) {
               .map((_, index) => (
                 <Tr key={index}>
                   <Td>{"-"}</Td>
-                  <Td></Td>
+                  <Td>{"-"}</Td>
                 </Tr>
               ))}
         </Tbody>
-        <Tfoot>
-          <Tr>
-            <Pagination
-              pageIndex={pageIndex}
-              setPageIndex={setPageIndex}
-              totalCount={tableItems.length}
-            />
-          </Tr>
-        </Tfoot>
       </Table>
+      <Box marginTop={4}>
+        <Pagination
+          pageIndex={pageIndex}
+          setPageIndex={setPageIndex}
+          totalCount={tableItems.length}
+        />
+      </Box>
     </TableContainer>
   );
 }
