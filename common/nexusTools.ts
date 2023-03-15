@@ -38,7 +38,7 @@ export const getAllLiveCells = async (ckb: any): Promise<Cell[]> => {
     fullCells.push(...liveCellsResult.objects);
   }
 
-  // isCellDAO
+  // filter pure CKB cell
   fullCells = fullCells.filter(item => item.cellOutput.type === undefined && item.data === "0x");
 
   return fullCells;
