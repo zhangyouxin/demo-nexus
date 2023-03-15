@@ -17,7 +17,7 @@ export function DownloadInfoButton() {
           description: (
             <Text>
               You can download Nexus-Wallet Chrome Extension
-              <Link href="https://github.com/zhangyouxin/demo-nexus/releases/tag/0.1.0">
+              <Link href="https://github.com/zhangyouxin/demo-nexus/releases/tag/0.1.1">
                 <Text fontStyle="initial" fontWeight={500}>
                   HERE
                 </Text>
