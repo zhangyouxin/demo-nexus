@@ -1,5 +1,4 @@
 import { Cell, Script } from "@ckb-lumos/lumos";
-import { log } from 'console';
 
 export const DEFAULT_NEXUS_PAGE_SIZE = 20;
 
@@ -39,7 +38,8 @@ export const getAllLiveCells = async (ckb: any): Promise<Cell[]> => {
     fullCells.push(...liveCellsResult.objects);
   }
 
-  fullCells = fullCells.filter(item => item.cellOutput.type == undefined);
+  // isCellDAO
+  fullCells = fullCells.filter(item => item.cellOutput.type === undefined && item.data === "0x");
 
   return fullCells;
 };
