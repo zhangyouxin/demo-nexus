@@ -5,6 +5,8 @@ import {
   FormControl,
   FormLabel,
   Input,
+  InputGroup,
+  InputRightElement,
   NumberInput,
   NumberInputField,
 } from "@chakra-ui/react";
@@ -37,25 +39,37 @@ import {
 } from "../common/nexusTools";
 import { useLocalStorage } from "react-use";
 import { TransferBook } from "../components/TransferBook";
-import { formatDisplayCapacity, validateTransferAmount } from "../common/utils";
+import {
+  floatStringToShannon,
+  formatDisplayCapacity,
+  formatInputNumber,
+  validateTransferAmount,
+} from "../common/utils";
 import { DEFAULT_TX_FEE, MIN_TRANSFER_AMOUNT } from "../common/const";
 import { useNetwork } from "../hooks/useNetwork";
 import { ClaimTestnetToken } from "../components/ClaimTestnetToken";
 import { TransferTips } from "../components/TransferTips";
 import { buildTranferTx } from "../common/txBuilder";
 
+declare global {
+  interface Window {
+    ckb: any;
+  }
+}
+
 export default function Home() {
   const [transferBookItems, setTransferBookItems, removeTransferBookItems] =
     useLocalStorage("nexus-transfer-book", []);
   const [ckb, setCkb] = useState<any>();
   const [balance, setBalance] = useState(BI.from(0));
+  const [transferAllFlag, setTransferAllFlag] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState(false);
   const [transfering, setTransfering] = useState(false);
   const [fullCells, setFullCells] = useState<Array<NCell>>([]);
   const [transferToAddress, setTransferToAddress] = useState("");
   const [description, setDescription] = useState("");
   const [transferToLock, setTransferToLock] = useState<Script>();
-  const [tansferAmount, setTansferAmount] = useState<number>();
+  const [tansferAmount, setTansferAmount] = useState<string>();
   const [offChainLockInfos, setOffChainLockInfos] = useState<Array<NScript>>(
     []
   );
@@ -70,6 +84,11 @@ export default function Home() {
     handleRefresh();
   }, [ckb]);
 
+  function handleTransferAll() {
+    setTansferAmount(formatDisplayCapacity(balance));
+    setTransferAllFlag(true);
+  }
+
   async function handleRefresh(): Promise<Cell[]> {
     if (!ckb || network.loading) {
       return;
@@ -78,7 +97,6 @@ export default function Home() {
     try {
       let res = BI.from(0);
       let fullCells: Array<Cell> = await getAllLiveCells(ckb);
-
       fullCells.forEach((cell) => {
         res = res.add(cell.cellOutput.capacity);
       });
@@ -151,6 +169,7 @@ export default function Home() {
       tansferAmount,
       balance,
       transferToLock,
+      isTransferAll: transferAllFlag,
     });
     if (validateResult.code) {
       toast({
@@ -172,17 +191,23 @@ export default function Home() {
       console.log("target address", transferToAddress);
       console.log("target lock", transferToLock);
       console.log("transfer amount", tansferAmount);
-      const tx = buildTranferTx({
-        transferAmountBI: BI.from(tansferAmount).mul(10 ** 8),
+      const { tx, txSkeleton } = buildTranferTx({
+        transferAmountBI: floatStringToShannon(tansferAmount),
         network: network.data,
         transferToLock,
         collectedCells: newFullCells,
         changeLock: changeLock,
+        isTransferAll: transferAllFlag,
       });
       console.log("tx to sign:", tx);
 
-      const signatures: any[] = await ckb.fullOwnership.signTransaction({ tx });
+      const signatures: any[] = await window.ckb.request({
+        method: "wallet_fullOwnership_signTransaction",
+        params: { tx },
+      });
       console.log("signatures", signatures);
+      const inputCells = txSkeleton.get("inputs").toArray();
+      const inputArgs = inputCells.map((cell) => cell.cellOutput.lock.args);
       for (let index = 0; index < signatures.length; index++) {
         const [lock, sig] = signatures[index];
         const newWitnessArgs: WitnessArgs = {
@@ -191,7 +216,8 @@ export default function Home() {
         const newWitness = bytes.hexify(
           blockchain.WitnessArgs.pack(newWitnessArgs)
         );
-        tx.witnesses[index] = newWitness;
+        const inputIndex = inputArgs.findIndex((arg) => arg === lock.args);
+        tx.witnesses[inputIndex] = newWitness;
       }
       console.log("tx to send on chain", tx);
       const rpc = new RPC(network.data.rpcUrl);
@@ -238,6 +264,7 @@ export default function Home() {
     }
     setTransfering(false);
   }
+
   async function handleConnect() {
     const windowCKB = (window as any).ckb;
     if (!windowCKB) {
@@ -318,15 +345,28 @@ export default function Home() {
               Transfer Amount<span style={{ color: "red" }}>*</span>:
               <TransferTips />
             </FormLabel>
-            <NumberInput
-              onChange={(valueString) =>
-                setTansferAmount(parseNumber(valueString))
-              }
-              value={tansferAmount}
-              marginBottom={2}
-            >
-              <NumberInputField />
-            </NumberInput>
+            <InputGroup width="100%">
+              <NumberInput
+                onChange={(valueString) => {
+                  const res = formatInputNumber(valueString);
+                  if (res.code === 0) {
+                    setTansferAmount(res.value);
+                    setTransferAllFlag(false);
+                  }
+                }}
+                value={tansferAmount}
+                marginBottom={2}
+                width="100%"
+              >
+                <NumberInputField />
+                <InputRightElement width="5rem" mr={2}>
+                  <Button h="1.75rem" size="sm" onClick={handleTransferAll}>
+                    Tranfer All
+                  </Button>
+                </InputRightElement>
+              </NumberInput>
+            </InputGroup>
+
             <FormLabel>Description:</FormLabel>
             <Input
               type="text"

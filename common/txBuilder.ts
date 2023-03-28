@@ -17,7 +17,8 @@ export function buildTranferTx(payload: {
   network: NetworkInfo;
   transferToLock: Script;
   collectedCells: Cell[];
-  changeLock?: Script;
+  changeLock: Script;
+  isTransferAll?: boolean;
 }) {
   const preparedCells = [];
   let prepareAmount = BI.from(0);
@@ -50,7 +51,22 @@ export function buildTranferTx(payload: {
     },
     data: "0x",
   };
-  if (payload.changeLock) {
+  if (payload.isTransferAll) {
+    // transfer all
+    const originalAmount = BI.from(preparedCells[0].cellOutput.capacity);
+    if (
+      originalAmount
+        .sub(DEFAULT_TX_FEE)
+        .lt(BI.from(MIN_TRANSFER_AMOUNT).mul(10 ** 8))
+    ) {
+      throw new Error("transfer amount is too small");
+    }
+    outputCells[0].cellOutput.capacity = BI.from(
+      outputCells[0].cellOutput.capacity
+    )
+      .sub(DEFAULT_TX_FEE)
+      .toHexString();
+  } else {
     // need change
     outputCells[1] = {
       cellOutput: {
@@ -63,19 +79,6 @@ export function buildTranferTx(payload: {
       },
       data: "0x",
     };
-  } else {
-    // transfer all
-    const originalAmount = BI.from(preparedCells[0].cellOutput.capacity);
-    if (
-      originalAmount
-        .sub(DEFAULT_TX_FEE)
-        .lt(BI.from(MIN_TRANSFER_AMOUNT).mul(10 ** 8))
-    ) {
-      throw new Error("transfer amount is too small");
-    }
-    preparedCells[0].cellOutput.capacity = preparedCells[0].cellOutput.capacity
-      .sub(DEFAULT_TX_FEE)
-      .toHexString();
   }
   txSkeleton = txSkeleton.update("outputs", (outputs) => {
     return outputs.concat(...outputCells);
@@ -109,5 +112,5 @@ export function buildTranferTx(payload: {
   }
   console.log("txSkeleton", helpers.transactionSkeletonToObject(txSkeleton));
   const tx = helpers.createTransactionFromSkeleton(txSkeleton);
-  return tx;
+  return { tx, txSkeleton };
 }
