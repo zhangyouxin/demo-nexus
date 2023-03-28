@@ -37,12 +37,14 @@ import {
 } from "../common/nexusTools";
 import { useLocalStorage } from "react-use";
 import { TransferBook } from "../components/TransferBook";
+import { formatDisplayCapacity, validateTransferAmount } from "../common/utils";
+import { DEFAULT_TX_FEE } from "../common/const";
 
 export default function Home() {
   const [transferBookItems, setTransferBookItems, removeTransferBookItems] =
     useLocalStorage("nexus-transfer-book", []);
   const [ckb, setCkb] = useState<any>();
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState(BI.from(0));
   const [refreshing, setRefreshing] = useState(false);
   const [transfering, setTransfering] = useState(false);
   const [fullCells, setFullCells] = useState<Array<NCell>>([]);
@@ -75,11 +77,11 @@ export default function Home() {
     }
     setRefreshing(true);
     try {
-      let res = 0;
+      let res = BI.from(0);
       let fullCells: Array<Cell> = await getAllLiveCells(ckb);
 
       fullCells.forEach((cell) => {
-        res += Number(cell.cellOutput.capacity);
+        res = res.add(cell.cellOutput.capacity);
       });
       const networkConfig = await getConfig();
       const fullNCells = fullCells.map((cell): NCell => {
@@ -138,7 +140,22 @@ export default function Home() {
   }
 
   async function handleTransfer() {
-    if (!ckb || isNaN(Number(tansferAmount)) || tansferAmount < 64) {
+    if (!ckb) {
+      return;
+    }
+    const validateResult = validateTransferAmount({
+      tansferAmount,
+      balance,
+      transferToLock,
+    });
+    if (validateResult.code) {
+      toast({
+        title: "Error",
+        description: validateResult.message,
+        status: "error",
+        duration: 3_000,
+        isClosable: true,
+      });
       return;
     }
     setTransfering(true);
@@ -183,8 +200,11 @@ export default function Home() {
       };
       outputCells[1] = {
         cellOutput: {
-          // change amount = prepareAmount - transferAmount - 1000 shannons for tx fee
-          capacity: prepareAmount.sub(transferAmountBI).sub(1000).toHexString(),
+          // change amount = prepareAmount - transferAmount - DEFAULT_TX_FEE shannons for tx fee
+          capacity: prepareAmount
+            .sub(transferAmountBI)
+            .sub(DEFAULT_TX_FEE)
+            .toHexString(),
           lock: changeLock,
         },
         data: "0x",
@@ -328,7 +348,7 @@ export default function Home() {
             )}
           </div>
           <Text fontSize="xl" fontWeight={500} marginBottom="1rem">
-            BALANCE: {(Math.floor(balance / 10 ** 6) / 100).toFixed(2)} CKB
+            BALANCE: {formatDisplayCapacity(balance)} CKB
             <Button
               onClick={handleRefresh}
               isLoading={refreshing}

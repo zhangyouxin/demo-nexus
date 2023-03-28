@@ -39,7 +39,9 @@ export const getAllLiveCells = async (ckb: any): Promise<Cell[]> => {
   }
 
   // filter pure CKB cell
-  fullCells = fullCells.filter(item => item.cellOutput.type === undefined && item.data === "0x");
+  fullCells = fullCells.filter(
+    (item) => item.cellOutput.type === undefined && item.data === "0x"
+  );
 
   return fullCells;
 };
