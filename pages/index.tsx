@@ -39,6 +39,7 @@ import { useLocalStorage } from "react-use";
 import { TransferBook } from "../components/TransferBook";
 import { formatDisplayCapacity, validateTransferAmount } from "../common/utils";
 import { DEFAULT_TX_FEE } from "../common/const";
+import { useNetwork } from "../hooks/useNetwork";
 
 export default function Home() {
   const [transferBookItems, setTransferBookItems, removeTransferBookItems] =
@@ -56,6 +57,8 @@ export default function Home() {
     []
   );
   const [onChainLockInfos, setOnChainLockInfos] = useState<Array<NScript>>([]);
+  const network = useNetwork();
+  console.log("network", network);
 
   const toast = useToast();
   useEffect(() => {
@@ -65,14 +68,8 @@ export default function Home() {
     handleRefresh();
   }, [ckb]);
 
-  // TODO make config configurable
-  config.initializeConfig(config.predefined.AGGRON4);
-  async function getConfig(): Promise<config.Config> {
-    // TODO return ckb.configService.getConfig();
-    return Promise.resolve(config.getConfig());
-  }
   async function handleRefresh(): Promise<Cell[]> {
-    if (!ckb) {
+    if (!ckb || network.loading) {
       return;
     }
     setRefreshing(true);
@@ -83,7 +80,7 @@ export default function Home() {
       fullCells.forEach((cell) => {
         res = res.add(cell.cellOutput.capacity);
       });
-      const networkConfig = await getConfig();
+      const networkConfig = network.data.config;
       const fullNCells = fullCells.map((cell): NCell => {
         return {
           ...cell,
@@ -129,10 +126,15 @@ export default function Home() {
   }
 
   async function handleReceiverChange(e) {
+    if (!ckb || network.loading) {
+      return;
+    }
     const receiverAddress = e.target.value;
     setTransferToAddress(receiverAddress);
     try {
-      const receiverLock = helpers.parseAddress(receiverAddress);
+      const receiverLock = helpers.parseAddress(receiverAddress, {
+        config: network.data.config,
+      });
       setTransferToLock(receiverLock);
     } catch (error) {
       console.log("handleReceiverChange error", error);
@@ -140,7 +142,7 @@ export default function Home() {
   }
 
   async function handleTransfer() {
-    if (!ckb) {
+    if (!ckb || network.loading) {
       return;
     }
     const validateResult = validateTransferAmount({
@@ -184,7 +186,7 @@ export default function Home() {
           break;
         }
       }
-      const indexer = new Indexer("https://testnet.ckb.dev");
+      const indexer = new Indexer(network.data.rpcUrl);
       let txSkeleton = helpers.TransactionSkeleton({ cellProvider: indexer });
       txSkeleton = txSkeleton.update("inputs", (inputs) => {
         return inputs.concat(...preparedCells);
@@ -261,7 +263,7 @@ export default function Home() {
         tx.witnesses[index] = newWitness;
       }
       console.log("tx to send on chain", tx);
-      const rpc = new RPC("https://testnet.ckb.dev");
+      const rpc = new RPC(network.data.rpcUrl);
       const txHash = await rpc.sendTransaction(tx);
       console.log("txHash", txHash);
       setTransferBookItems((prev) => [
@@ -335,8 +337,14 @@ export default function Home() {
           <div className={styles.connect}>
             {!!ckb ? (
               <Badge fontSize="xl" fontStyle="italic">
-                Connected {"  "}
-                <CheckCircleIcon color="green.500" />
+                {network.loading ? (
+                  "Connecting..."
+                ) : (
+                  <>
+                    Connected to {network.data.displayName}
+                    <CheckCircleIcon color="green.500" ml={2} />
+                  </>
+                )}
               </Badge>
             ) : (
               <Badge>
