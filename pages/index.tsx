@@ -40,6 +40,7 @@ import { TransferBook } from "../components/TransferBook";
 import { formatDisplayCapacity, validateTransferAmount } from "../common/utils";
 import { DEFAULT_TX_FEE } from "../common/const";
 import { useNetwork } from "../hooks/useNetwork";
+import { ClaimTestnetToken } from "../components/ClaimTestnetToken";
 
 export default function Home() {
   const [transferBookItems, setTransferBookItems, removeTransferBookItems] =
@@ -58,7 +59,6 @@ export default function Home() {
   );
   const [onChainLockInfos, setOnChainLockInfos] = useState<Array<NScript>>([]);
   const network = useNetwork();
-  console.log("network", network);
 
   const toast = useToast();
   useEffect(() => {
@@ -343,6 +343,7 @@ export default function Home() {
                   <>
                     Connected to {network.data.displayName}
                     <CheckCircleIcon color="green.500" ml={2} />
+                    {network.data.id === "testnet" && <ClaimTestnetToken />}
                   </>
                 )}
               </Badge>
