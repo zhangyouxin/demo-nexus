@@ -38,9 +38,10 @@ import {
 import { useLocalStorage } from "react-use";
 import { TransferBook } from "../components/TransferBook";
 import { formatDisplayCapacity, validateTransferAmount } from "../common/utils";
-import { DEFAULT_TX_FEE } from "../common/const";
+import { DEFAULT_TX_FEE, MIN_TRANSFER_AMOUNT } from "../common/const";
 import { useNetwork } from "../hooks/useNetwork";
 import { ClaimTestnetToken } from "../components/ClaimTestnetToken";
+import { TransferTips } from "../components/TransferTips";
 
 export default function Home() {
   const [transferBookItems, setTransferBookItems, removeTransferBookItems] =
@@ -180,7 +181,7 @@ export default function Home() {
         if (
           prepareAmount
             .sub(1000)
-            .sub(64 * 10 ** 8)
+            .sub(MIN_TRANSFER_AMOUNT * 10 ** 8)
             .gte(transferAmountBI)
         ) {
           break;
@@ -386,6 +387,7 @@ export default function Home() {
             />
             <FormLabel>
               Transfer Amount<span style={{ color: "red" }}>*</span>:
+              <TransferTips />
             </FormLabel>
             <NumberInput
               onChange={(valueString) =>
