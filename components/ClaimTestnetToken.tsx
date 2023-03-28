@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Text, useToast, Link, IconButton } from "@chakra-ui/react";
+import { Text, useToast, Link, IconButton, Box } from "@chakra-ui/react";
 import { QuestionOutlineIcon } from "@chakra-ui/icons";
 
-export function DownloadInfoButton() {
+export function ClaimTestnetToken() {
   const toast = useToast();
   return (
     <IconButton
@@ -13,20 +13,18 @@ export function DownloadInfoButton() {
       icon={<QuestionOutlineIcon />}
       onClick={() => {
         toast({
-          title: "Help",
+          title: "Testnet Tips",
           description: (
             <Text>
-              You can download Nexus-Wallet Chrome Extension
-              <Link
-                href="https://github.com/zhangyouxin/demo-nexus/releases/tag/0.1.1"
-                ml={2}
-              >
+              You can open the Address Book below and copy some addresss, then
+              claim testnet token
+              <Link href="https://faucet.nervos.org/" ml={2}>
                 HERE
-              </Link>{" "}
+              </Link>
             </Text>
           ),
           status: "info",
-          duration: 3_000,
+          duration: 5_000,
           isClosable: true,
         });
       }}
