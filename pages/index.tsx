@@ -42,6 +42,7 @@ import { DEFAULT_TX_FEE, MIN_TRANSFER_AMOUNT } from "../common/const";
 import { useNetwork } from "../hooks/useNetwork";
 import { ClaimTestnetToken } from "../components/ClaimTestnetToken";
 import { TransferTips } from "../components/TransferTips";
+import { buildTranferTx } from "../common/txBuilder";
 
 export default function Home() {
   const [transferBookItems, setTransferBookItems, removeTransferBookItems] =
@@ -171,84 +172,13 @@ export default function Home() {
       console.log("target address", transferToAddress);
       console.log("target lock", transferToLock);
       console.log("transfer amount", tansferAmount);
-      const preparedCells = [];
-      const transferAmountBI = BI.from(tansferAmount).mul(10 ** 8);
-      let prepareAmount = BI.from(0);
-      for (let i = 0; i < newFullCells.length; i++) {
-        const cellCkbAmount = BI.from(newFullCells[i].cellOutput.capacity);
-        preparedCells.push(newFullCells[i]);
-        prepareAmount = prepareAmount.add(cellCkbAmount);
-        if (
-          prepareAmount
-            .sub(1000)
-            .sub(MIN_TRANSFER_AMOUNT * 10 ** 8)
-            .gte(transferAmountBI)
-        ) {
-          break;
-        }
-      }
-      const indexer = new Indexer(network.data.rpcUrl);
-      let txSkeleton = helpers.TransactionSkeleton({ cellProvider: indexer });
-      txSkeleton = txSkeleton.update("inputs", (inputs) => {
-        return inputs.concat(...preparedCells);
+      const tx = buildTranferTx({
+        transferAmountBI: BI.from(tansferAmount).mul(10 ** 8),
+        network: network.data,
+        transferToLock,
+        collectedCells: newFullCells,
+        changeLock: changeLock,
       });
-
-      const outputCells: Cell[] = [];
-      outputCells[0] = {
-        cellOutput: {
-          capacity: transferAmountBI.toHexString(),
-          lock: transferToLock,
-        },
-        data: "0x",
-      };
-      outputCells[1] = {
-        cellOutput: {
-          // change amount = prepareAmount - transferAmount - DEFAULT_TX_FEE shannons for tx fee
-          capacity: prepareAmount
-            .sub(transferAmountBI)
-            .sub(DEFAULT_TX_FEE)
-            .toHexString(),
-          lock: changeLock,
-        },
-        data: "0x",
-      };
-      txSkeleton = txSkeleton.update("outputs", (outputs) => {
-        return outputs.concat(...outputCells);
-      });
-
-      txSkeleton = txSkeleton.update("cellDeps", (cellDeps) => {
-        return cellDeps.concat({
-          outPoint: {
-            txHash:
-              config.predefined.AGGRON4.SCRIPTS.SECP256K1_BLAKE160.TX_HASH,
-            index: config.predefined.AGGRON4.SCRIPTS.SECP256K1_BLAKE160.INDEX,
-          },
-          depType:
-            config.predefined.AGGRON4.SCRIPTS.SECP256K1_BLAKE160.DEP_TYPE,
-        });
-      });
-      for (let i = 0; i < preparedCells.length; i++) {
-        txSkeleton = txSkeleton.update("witnesses", (witnesses) =>
-          witnesses.push("0x")
-        );
-      }
-      const witnessArgs: WitnessArgs = {
-        lock: bytes.hexify(new Uint8Array(65)),
-      };
-      const secp256k1Witness = bytes.hexify(
-        blockchain.WitnessArgs.pack(witnessArgs)
-      );
-      for (let i = 0; i < preparedCells.length; i++) {
-        txSkeleton = txSkeleton.update("witnesses", (witnesses) =>
-          witnesses.set(i, secp256k1Witness)
-        );
-      }
-      console.log(
-        "txSkeleton",
-        helpers.transactionSkeletonToObject(txSkeleton)
-      );
-
-      const tx = helpers.createTransactionFromSkeleton(txSkeleton);
       console.log("tx to sign:", tx);
 
       const signatures: any[] = await ckb.fullOwnership.signTransaction({ tx });
@@ -285,10 +215,9 @@ export default function Home() {
             Visit{" "}
             <Link
               href={`https://pudge.explorer.nervos.org/transaction/${txHash}`}
+              textDecor="underline"
             >
-              <Text fontStyle="initial" fontWeight={500}>
-                explorer
-              </Text>
+              EXPLORER
             </Link>{" "}
             to check tx status.
           </>
