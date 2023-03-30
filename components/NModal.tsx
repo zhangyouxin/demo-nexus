@@ -1,9 +1,5 @@
-import * as React from "react";
+import * as React from 'react';
 import {
-  Text,
-  useToast,
-  Link,
-  IconButton,
   Button,
   ModalBody,
   ModalCloseButton,
@@ -13,10 +9,14 @@ import {
   ModalOverlay,
   useDisclosure,
   Modal,
-} from "@chakra-ui/react";
-import { QuestionOutlineIcon } from "@chakra-ui/icons";
+} from '@chakra-ui/react';
 
-export function NModal({ title, children }) {
+interface NModalProps {
+  title: string
+  children: React.ReactNode
+}
+
+export function NModal({ title, children }: NModalProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>

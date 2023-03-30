@@ -1,10 +1,10 @@
-import * as React from "react";
-import { Text, useToast, Link, IconButton, Box } from "@chakra-ui/react";
-import { QuestionOutlineIcon } from "@chakra-ui/icons";
+import * as React from 'react';
+import { useToast, IconButton } from '@chakra-ui/react';
+import { QuestionOutlineIcon } from '@chakra-ui/icons';
 
 export function BaseIconButton(props: {
-  description: React.ReactNode;
-  title?: string;
+  description: React.ReactNode
+  title?: string
 }) {
   const toast = useToast();
   return (
@@ -16,9 +16,9 @@ export function BaseIconButton(props: {
       icon={<QuestionOutlineIcon />}
       onClick={() => {
         toast({
-          title: props.title || "Tips",
+          title: props.title || 'Tips',
           description: props.description,
-          status: "info",
+          status: 'info',
           duration: 5_000,
           isClosable: true,
         });

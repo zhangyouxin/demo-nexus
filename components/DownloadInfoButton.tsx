@@ -1,6 +1,6 @@
-import * as React from "react";
-import { Text, Link } from "@chakra-ui/react";
-import { BaseIconButton } from "./BaseIconButton";
+import * as React from 'react';
+import { Text, Link } from '@chakra-ui/react';
+import { BaseIconButton } from './BaseIconButton';
 
 export function DownloadInfoButton() {
   return (
@@ -14,7 +14,7 @@ export function DownloadInfoButton() {
             ml={2}
           >
             HERE
-          </Link>{" "}
+          </Link>{' '}
         </Text>
       }
     />
