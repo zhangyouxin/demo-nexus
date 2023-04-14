@@ -1,18 +1,5 @@
 import * as React from 'react';
-import {
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  Tooltip,
-  Text,
-  Link,
-  Button,
-  Box,
-} from '@chakra-ui/react';
+import { Table, TableContainer, Tbody, Td, Th, Thead, Tr, Tooltip, Text, Link, Button, Box } from '@chakra-ui/react';
 import { formatDisplayAddress } from '../common/utils';
 import { Pagination } from './Pagination';
 import { DEFAULT_PAGE_SIZE } from '../common/const';
@@ -21,9 +8,10 @@ import { type TransferBookItem } from '../common/types';
 
 export function TransferBook() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [items = [], setTransferBookItems, removeTransferBookItems] = useLocalStorage<
-  TransferBookItem[]
-  >('nexus-transfer-book', []);
+  const [items = [], setTransferBookItems, removeTransferBookItems] = useLocalStorage<TransferBookItem[]>(
+    'nexus-transfer-book',
+    [],
+  );
   const [pageIndex, setPageIndex] = React.useState(0);
   const currentPageItems = items.slice(pageIndex * 10, (pageIndex + 1) * 10);
 
@@ -43,18 +31,12 @@ export function TransferBook() {
           {currentPageItems.map((item, index) => (
             <Tr key={`${item.to}${index}`}>
               <Td>
-                <Tooltip label={item.to}>
-                  {formatDisplayAddress(item.to)}
-                </Tooltip>
+                <Tooltip label={item.to}>{formatDisplayAddress(item.to)}</Tooltip>
               </Td>
               <Td>{item.amount} CKB</Td>
               <Td>
                 <Tooltip label={item.description}>
-                  <Text
-                    textOverflow="ellipsis"
-                    overflow="hidden"
-                    maxWidth="200px"
-                  >
+                  <Text textOverflow="ellipsis" overflow="hidden" maxWidth="200px">
                     {' '}
                     {item.description || '-'}
                   </Text>
@@ -62,9 +44,7 @@ export function TransferBook() {
               </Td>
               <Td>{item.time}</Td>
               <Td>
-                <Link
-                  href={`https://pudge.explorer.nervos.org/transaction/${item.txHash}`}
-                >
+                <Link href={`https://pudge.explorer.nervos.org/transaction/${item.txHash}`}>
                   <Text fontStyle="initial" fontWeight={500}>
                     Explorer
                   </Text>
@@ -73,25 +53,19 @@ export function TransferBook() {
             </Tr>
           ))}
           {currentPageItems.length <= DEFAULT_PAGE_SIZE &&
-            new Array(DEFAULT_PAGE_SIZE - currentPageItems.length)
-              .fill(null)
-              .map((_, index) => (
-                <Tr key={index}>
-                  <Td>{'-'}</Td>
-                  <Td>{'-'}</Td>
-                  <Td>{'-'}</Td>
-                  <Td>{'-'}</Td>
-                  <Td>{'-'}</Td>
-                </Tr>
-              ))}
+            new Array(DEFAULT_PAGE_SIZE - currentPageItems.length).fill(null).map((_, index) => (
+              <Tr key={index}>
+                <Td>{'-'}</Td>
+                <Td>{'-'}</Td>
+                <Td>{'-'}</Td>
+                <Td>{'-'}</Td>
+                <Td>{'-'}</Td>
+              </Tr>
+            ))}
         </Tbody>
       </Table>
       <Box display="flex" gap={4} marginTop={4}>
-        <Pagination
-          pageIndex={pageIndex}
-          setPageIndex={setPageIndex}
-          totalCount={items.length}
-        />
+        <Pagination pageIndex={pageIndex} setPageIndex={setPageIndex} totalCount={items.length} />
         <Button onClick={removeTransferBookItems} colorScheme="red">
           {' '}
           Reset Transfer Book{' '}

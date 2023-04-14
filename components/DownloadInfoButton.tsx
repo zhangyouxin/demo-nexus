@@ -8,11 +8,7 @@ export function DownloadInfoButton() {
       description={
         <Text>
           You can download Nexus-Wallet Chrome Extension
-          <Link
-            href="https://github.com/ckb-js/nexus/releases"
-            textDecor="underline"
-            ml={2}
-          >
+          <Link href="https://github.com/ckb-js/nexus/releases" textDecor="underline" ml={2}>
             HERE
           </Link>{' '}
         </Text>

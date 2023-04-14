@@ -10,19 +10,11 @@ interface PaginationProp {
   pageSize?: number
 }
 
-export function Pagination({
-  pageIndex,
-  setPageIndex,
-  totalCount,
-  pageSize = DEFAULT_PAGE_SIZE,
-}: PaginationProp) {
+export function Pagination({ pageIndex, setPageIndex, totalCount, pageSize = DEFAULT_PAGE_SIZE }: PaginationProp) {
   const maxPageIndex = Math.ceil(totalCount / pageSize) - 1;
   return (
     <Box>
-      <IconButton
-        aria-label={'previous'}
-        onClick={() => setPageIndex(pageIndex > 0 ? pageIndex - 1 : 0)}
-      >
+      <IconButton aria-label={'previous'} onClick={() => setPageIndex(pageIndex > 0 ? pageIndex - 1 : 0)}>
         <ChevronLeftIcon />
       </IconButton>
       <Text display="inline-block" marginX={4}>
@@ -30,9 +22,7 @@ export function Pagination({
       </Text>
       <IconButton
         aria-label={'next'}
-        onClick={() =>
-          setPageIndex(pageIndex < maxPageIndex ? pageIndex + 1 : maxPageIndex)
-        }
+        onClick={() => setPageIndex(pageIndex < maxPageIndex ? pageIndex + 1 : maxPageIndex)}
       >
         <ChevronRightIcon />
       </IconButton>

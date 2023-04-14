@@ -1,7 +1,7 @@
-import * as React from "react";
-import { Box, Radio, Stack, RadioGroup } from "@chakra-ui/react";
-import { isEmpty } from "lodash";
-import { useNetwork } from "../hooks/useNetwork";
+import * as React from 'react';
+import { Box, Radio, Stack, RadioGroup } from '@chakra-ui/react';
+import { isEmpty } from 'lodash';
+import { useNetwork } from '../hooks/useNetwork';
 
 export function NetworkSelect() {
   const { network, networkList, setNetwork } = useNetwork();
@@ -15,10 +15,10 @@ export function NetworkSelect() {
       {!isEmpty(networkList) && (
         <RadioGroup defaultValue={network.id} onChange={handleNetworkChange}>
           <Stack>
-            {networkList!.map((network) => {
+            {networkList!.map((item) => {
               return (
-                <Radio key={network.id} value={network.id}>
-                  {network.displayName}
+                <Radio key={item.id} value={item.id}>
+                  {item.displayName}
                 </Radio>
               );
             })}

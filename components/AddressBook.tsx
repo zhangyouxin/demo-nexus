@@ -1,16 +1,5 @@
 import * as React from 'react';
-import {
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  Tooltip,
-  useToast,
-  Box,
-} from '@chakra-ui/react';
+import { Table, TableContainer, Tbody, Td, Th, Thead, Tr, Tooltip, useToast, Box } from '@chakra-ui/react';
 import { CopyIcon } from '@chakra-ui/icons';
 import { type NCell, type NScript } from '../common/types';
 import { BI } from '@ckb-lumos/lumos';
@@ -31,19 +20,17 @@ interface TableItemProp {
 export function AddressBook(prop: AddressBookProp) {
   const [pageIndex, setPageIndex] = React.useState(0);
   const { offChainLockInfos, onChainLockInfos, cells } = prop;
-  const tableItems = [...offChainLockInfos, ...onChainLockInfos].map(
-    (lockInfo: NScript): TableItemProp => {
-      const address = lockInfo.address;
-      const addressCells = cells.filter((cell) => cell.address === address);
-      const addressBalance = addressCells.reduce((acc, cell) => {
-        return acc.add(cell.cellOutput.capacity);
-      }, BI.from(0));
-      return {
-        address,
-        balance: formatDisplayCapacity(addressBalance),
-      };
-    },
-  );
+  const tableItems = [...offChainLockInfos, ...onChainLockInfos].map((lockInfo: NScript): TableItemProp => {
+    const address = lockInfo.address;
+    const addressCells = cells.filter((cell) => cell.address === address);
+    const addressBalance = addressCells.reduce((acc, cell) => {
+      return acc.add(cell.cellOutput.capacity);
+    }, BI.from(0));
+    return {
+      address,
+      balance: formatDisplayCapacity(addressBalance),
+    };
+  });
   const toast = useToast();
   function handleAddressClick(): void {
     toast({
@@ -52,10 +39,7 @@ export function AddressBook(prop: AddressBookProp) {
       duration: 1000,
     });
   }
-  const currentPageItems = tableItems.slice(
-    pageIndex * DEFAULT_PAGE_SIZE,
-    (pageIndex + 1) * DEFAULT_PAGE_SIZE,
-  );
+  const currentPageItems = tableItems.slice(pageIndex * DEFAULT_PAGE_SIZE, (pageIndex + 1) * DEFAULT_PAGE_SIZE);
 
   return (
     <TableContainer>
@@ -70,9 +54,7 @@ export function AddressBook(prop: AddressBookProp) {
           {currentPageItems.map((item) => (
             <Tr key={item.address}>
               <Td>
-                <Tooltip label={item.address}>
-                  {formatDisplayAddress(item.address)}
-                </Tooltip>
+                <Tooltip label={item.address}>{formatDisplayAddress(item.address)}</Tooltip>
                 <CopyToClipboard
                   text={item.address}
                   onCopy={() => {
@@ -86,22 +68,16 @@ export function AddressBook(prop: AddressBookProp) {
             </Tr>
           ))}
           {currentPageItems.length <= DEFAULT_PAGE_SIZE &&
-            new Array(DEFAULT_PAGE_SIZE - currentPageItems.length)
-              .fill(null)
-              .map((_, index) => (
-                <Tr key={index}>
-                  <Td>{'-'}</Td>
-                  <Td>{'-'}</Td>
-                </Tr>
-              ))}
+            new Array(DEFAULT_PAGE_SIZE - currentPageItems.length).fill(null).map((_, index) => (
+              <Tr key={index}>
+                <Td>{'-'}</Td>
+                <Td>{'-'}</Td>
+              </Tr>
+            ))}
         </Tbody>
       </Table>
       <Box marginTop={4}>
-        <Pagination
-          pageIndex={pageIndex}
-          setPageIndex={setPageIndex}
-          totalCount={tableItems.length}
-        />
+        <Pagination pageIndex={pageIndex} setPageIndex={setPageIndex} totalCount={tableItems.length} />
       </Box>
     </TableContainer>
   );
