@@ -22,13 +22,7 @@ export function CellCard(prop: NCell) {
   };
 
   return (
-    <Box
-      maxW="lg"
-      borderWidth="1px"
-      borderRadius="lg"
-      overflow="hidden"
-      margin="1rem"
-    >
+    <Box maxW="lg" borderWidth="1px" borderRadius="lg" overflow="hidden" margin="1rem">
       <Box p="6">
         <Box display="flex" alignItems="baseline">
           <Badge borderRadius="full" px="2" colorScheme="teal">
@@ -36,13 +30,7 @@ export function CellCard(prop: NCell) {
           </Badge>
         </Box>
 
-        <Box
-          mt="1"
-          fontWeight="semibold"
-          as="h4"
-          lineHeight="tight"
-          noOfLines={1}
-        >
+        <Box mt="1" fontWeight="semibold" as="h4" lineHeight="tight" noOfLines={1}>
           {(
             BI.from(property.capacity)
               .div(10 ** 6)
@@ -50,22 +38,10 @@ export function CellCard(prop: NCell) {
           ).toFixed(2)}
         </Box>
 
-        <Box
-          mt="1"
-          color="gray.500"
-          fontWeight="semibold"
-          letterSpacing="wide"
-          fontSize="xs"
-        >
+        <Box mt="1" color="gray.500" fontWeight="semibold" letterSpacing="wide" fontSize="xs">
           ADDRESS:{property.address}
         </Box>
-        <Box
-          mt="1"
-          color="gray.500"
-          fontWeight="semibold"
-          letterSpacing="wide"
-          fontSize="xs"
-        >
+        <Box mt="1" color="gray.500" fontWeight="semibold" letterSpacing="wide" fontSize="xs">
           LOCK_ARGS:{property.args}
         </Box>
         {property.type && (
@@ -80,38 +56,14 @@ export function CellCard(prop: NCell) {
                 </AccordionButton>
               </h2>
               <AccordionPanel>
-                <Box
-                  mt="1"
-                  color="gray.500"
-                  fontWeight="semibold"
-                  letterSpacing="wide"
-                  fontSize="xs"
-                  display="flex"
-                >
-                  <Text>CODE HASH:</Text>{' '}
-                  <Text width="250px">{property.type.codeHash}</Text>
+                <Box mt="1" color="gray.500" fontWeight="semibold" letterSpacing="wide" fontSize="xs" display="flex">
+                  <Text>CODE HASH:</Text> <Text width="250px">{property.type.codeHash}</Text>
                 </Box>
-                <Box
-                  mt="1"
-                  color="gray.500"
-                  fontWeight="semibold"
-                  letterSpacing="wide"
-                  fontSize="xs"
-                  display="flex"
-                >
-                  <Text>HASH TYPE:</Text>{' '}
-                  <Text width="250px">{property.type.hashType}</Text>
+                <Box mt="1" color="gray.500" fontWeight="semibold" letterSpacing="wide" fontSize="xs" display="flex">
+                  <Text>HASH TYPE:</Text> <Text width="250px">{property.type.hashType}</Text>
                 </Box>
-                <Box
-                  mt="1"
-                  color="gray.500"
-                  fontWeight="semibold"
-                  letterSpacing="wide"
-                  fontSize="xs"
-                  display="flex"
-                >
-                  <Text>ARGS:</Text>{' '}
-                  <Text width="250px">{property.type.args}</Text>
+                <Box mt="1" color="gray.500" fontWeight="semibold" letterSpacing="wide" fontSize="xs" display="flex">
+                  <Text>ARGS:</Text> <Text width="250px">{property.type.args}</Text>
                 </Box>
               </AccordionPanel>
             </AccordionItem>

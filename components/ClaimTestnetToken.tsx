@@ -5,11 +5,10 @@ import { BaseIconButton } from './BaseIconButton';
 export function ClaimTestnetToken() {
   return (
     <BaseIconButton
-      title='Claim Testnet Token'
+      title="Claim Testnet Token"
       description={
         <Text>
-          You can open the Address Book below and copy some addresss, then claim
-          testnet token
+          You can open the Address Book below and copy some addresss, then claim testnet token
           <Link href="https://faucet.nervos.org/" ml={2} textDecor="underline">
             HERE
           </Link>
