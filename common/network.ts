@@ -1,4 +1,4 @@
-import { config } from "@ckb-lumos/lumos";
+import { type config } from '@ckb-lumos/lumos';
 
 export interface NetworkConfig {
   id: string;
@@ -9,7 +9,7 @@ export interface NetworkConfig {
 }
 
 export interface NetworkScriptConfig {
-  config: config.Config;
+  config: config.Config
 }
 
 export interface NetworkInfo extends NetworkConfig, NetworkScriptConfig {}
@@ -29,9 +29,9 @@ export const DEFAULT_NETWORKS: NetworkConfig[] = [
     rpcUrl: "https://mainnet.ckb.dev",
   },
   {
-    id: "devnet",
-    networkName: "ckb_devnet",
-    displayName: "Devnet",
-    rpcUrl: "http://localhost:8114",
+    id: 'devnet',
+    networkName: 'ckb_devnet',
+    displayName: 'Devnet',
+    rpcUrl: 'http://localhost:8114',
   },
 ];

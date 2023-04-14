@@ -7,7 +7,7 @@ import {
 import { useLocalStorage } from "usehooks-ts";
 
 export const useNetwork = () => {
-  const [networkList, setNetworkList] = useLocalStorage(
+  const [networkList, setNetworkList] = useLocalStorage<NetworkConfig[] | undefined>(
     "nexus-network-list",
     undefined
   );
@@ -22,7 +22,7 @@ export const useNetwork = () => {
     DEFAULT_NETWORKS[0];
 
   const setNetwork = (networkId: string) => {
-    const newNetworkList = networkList.map((network) => {
+    const newNetworkList = networkList!.map((network) => {
       if (network.id === networkId) {
         network.enable = true;
       } else {

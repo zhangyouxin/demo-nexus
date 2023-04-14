@@ -1,9 +1,5 @@
-import * as React from "react";
+import * as React from 'react';
 import {
-  Text,
-  useToast,
-  Link,
-  IconButton,
   Button,
   ModalBody,
   ModalCloseButton,
@@ -13,8 +9,7 @@ import {
   ModalOverlay,
   useDisclosure,
   Modal,
-} from "@chakra-ui/react";
-import { QuestionOutlineIcon } from "@chakra-ui/icons";
+} from '@chakra-ui/react';
 
 type Props = {
   buttonText?: string;

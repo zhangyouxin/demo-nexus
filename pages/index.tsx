@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Badge,
   ChakraProvider,
@@ -9,36 +9,39 @@ import {
   InputRightElement,
   NumberInput,
   NumberInputField,
-} from "@chakra-ui/react";
-import Head from "next/head";
-import { useEffect, useState } from "react";
-import { Container, Button, Box, Text, useToast, Link } from "@chakra-ui/react";
-import { CheckCircleIcon } from "@chakra-ui/icons";
-import styles from "../styles/Home.module.css";
-import { CellCard } from "../components/CellCard";
+  Container,
+  Button,
+  Box,
+  Text,
+  useToast,
+  Link,
+} from '@chakra-ui/react';
+import Head from 'next/head';
+import { useEffect, useState } from 'react';
+import { CheckCircleIcon } from '@chakra-ui/icons';
+import styles from '../styles/Home.module.css';
+import { CellCard } from '../components/CellCard';
 import {
   BI,
-  Cell,
-  config,
+  type Cell,
   helpers,
-  Indexer,
   RPC,
-  Script,
-  WitnessArgs,
-} from "@ckb-lumos/lumos";
-import { bytes } from "@ckb-lumos/codec";
-import { blockchain } from "@ckb-lumos/base";
-import { DownloadInfoButton } from "../components/DownloadInfoButton";
-import { NModal } from "../components/NModal";
-import { AddressBook } from "../components/AddressBook";
-import { NCell, NScript } from "../common/types";
+  type Script,
+  type WitnessArgs,
+} from '@ckb-lumos/lumos';
+import { bytes } from '@ckb-lumos/codec';
+import { blockchain } from '@ckb-lumos/base';
+import { DownloadInfoButton } from '../components/DownloadInfoButton';
+import { NModal } from '../components/NModal';
+import { AddressBook } from '../components/AddressBook';
+import { type NCell, type NScript } from '../common/types';
 import {
   getAllLiveCells,
   getOffChainLocks,
   getOnChainLocks,
-} from "../common/nexusTools";
-import { useLocalStorage } from "react-use";
-import { TransferBook } from "../components/TransferBook";
+} from '../common/nexusTools';
+import { useLocalStorage } from 'react-use';
+import { TransferBook } from '../components/TransferBook';
 import {
   floatStringToShannon,
   formatDisplayCapacity,
@@ -50,24 +53,32 @@ import { TransferTips } from "../components/TransferTips";
 import { buildTranferTx } from "../common/txBuilder";
 import { NetworkSelect } from "../components/NetworkSelect";
 import { useNetworkConfig } from "../hooks/useNetworkConfig";
+import { NameCard } from '../components/NameCard';
 
+// https://github.com/ckb-js/nexus/blob/main/docs/rpc.md
+type MethodNames = 'wallet_enable' | 'wallet_fullOwnership_getLiveCells' | 'wallet_fullOwnership_getOffChainLocks' | 'wallet_fullOwnership_getOnChainLocks' | 'wallet_fullOwnership_signData' | 'wallet_fullOwnership_signTransaction';
 declare global {
   interface Window {
-    ckb: any;
+    ckb: {
+      request: (payload: { method: MethodNames, params: any }) => Promise<any>
+    }
   }
 }
 
-export default function Home() {
+export default function Home(): JSX.Element {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [transferBookItems, setTransferBookItems, removeTransferBookItems] =
-    useLocalStorage("nexus-transfer-book", []);
-  const [ckb, setCkb] = useState<any>();
+    useLocalStorage<any>('nexus-transfer-book', []);
+
+  const [nickName, setNickName] = useState<string>('');
+  const [ckb, setCkb] = useState<typeof window.ckb>();
   const [balance, setBalance] = useState(BI.from(0));
   const [transferAllFlag, setTransferAllFlag] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState(false);
   const [transfering, setTransfering] = useState(false);
-  const [fullCells, setFullCells] = useState<Array<NCell>>([]);
-  const [transferToAddress, setTransferToAddress] = useState("");
-  const [description, setDescription] = useState("");
+  const [fullCells, setFullCells] = useState<NCell[]>([]);
+  const [transferToAddress, setTransferToAddress] = useState('');
+  const [description, setDescription] = useState<string>('');
   const [transferToLock, setTransferToLock] = useState<Script>();
   const [tansferAmount, setTansferAmount] = useState<string>();
   const [offChainLockInfos, setOffChainLockInfos] = useState<Array<NScript>>(
@@ -78,10 +89,10 @@ export default function Home() {
 
   const toast = useToast();
   useEffect(() => {
-    handleConnect();
+    void handleConnect();
   }, []);
   useEffect(() => {
-    handleRefresh();
+    void handleRefresh();
   }, [ckb]);
 
   async function handleConnect() {
@@ -101,17 +112,17 @@ export default function Home() {
 
   async function handleRefresh(): Promise<Cell[]> {
     if (!ckb || network.loading) {
-      return;
+      return [];
     }
     setRefreshing(true);
     try {
       let res = BI.from(0);
-      let fullCells: Array<Cell> = await getAllLiveCells(ckb);
-      fullCells.forEach((cell) => {
+      const newCells: Cell[] = await getAllLiveCells(ckb);
+      newCells.forEach((cell) => {
         res = res.add(cell.cellOutput.capacity);
       });
-      const networkConfig = network.data.config;
-      const fullNCells = fullCells.map((cell): NCell => {
+      const networkConfig = network.data!.config;
+      const fullNCells = newCells.map((cell): NCell => {
         return {
           ...cell,
           address: helpers.encodeToAddress(cell.cellOutput.lock, {
@@ -122,11 +133,11 @@ export default function Home() {
       const offChainLocks: Script[] = await getOffChainLocks(ckb);
       const onChainExternalLocks: Script[] = await getOnChainLocks(
         ckb,
-        "external"
+        'external',
       );
       const onChainInternalLocks: Script[] = await getOnChainLocks(
         ckb,
-        "internal"
+        'internal',
       );
 
       setOffChainLockInfos(
@@ -134,16 +145,16 @@ export default function Home() {
           (lock): NScript => ({
             lock,
             address: helpers.encodeToAddress(lock, { config: networkConfig }),
-          })
-        )
+          }),
+        ),
       );
       setOnChainLockInfos(
         [...onChainExternalLocks, ...onChainInternalLocks].map(
           (lock): NScript => ({
             lock,
             address: helpers.encodeToAddress(lock, { config: networkConfig }),
-          })
-        )
+          }),
+        ),
       );
       setFullCells(fullNCells);
       setBalance(res);
@@ -151,7 +162,8 @@ export default function Home() {
       return fullCells;
     } catch (error) {
       setRefreshing(false);
-      console.log("handleRefreshBalance error", error);
+      console.log('handleRefreshBalance error', error);
+      return [];
     }
   }
 
@@ -163,11 +175,11 @@ export default function Home() {
     setTransferToAddress(receiverAddress);
     try {
       const receiverLock = helpers.parseAddress(receiverAddress, {
-        config: network.data.config,
+        config: network.data!.config,
       });
       setTransferToLock(receiverLock);
     } catch (error) {
-      console.log("handleReceiverChange error", error);
+      console.log('handleReceiverChange error', error);
     }
   }
 
@@ -176,16 +188,16 @@ export default function Home() {
       return;
     }
     const validateResult = validateTransferAmount({
-      tansferAmount,
+      tansferAmount: tansferAmount!,
       balance,
       transferToLock,
       isTransferAll: transferAllFlag,
     });
     if (validateResult.code) {
       toast({
-        title: "Error",
+        title: 'Error',
         description: validateResult.message,
-        status: "error",
+        status: 'error',
         duration: 3_000,
         isClosable: true,
       });
@@ -195,28 +207,28 @@ export default function Home() {
     try {
       const newFullCells = await handleRefresh();
       const changeLock: Script = (
-        await ckb.fullOwnership.getOffChainLocks({ change: "internal" })
+        await ckb.request({ method: 'wallet_fullOwnership_getOffChainLocks', params: { change: 'internal' } })
       )[0];
-      console.log("changeLock", changeLock);
-      console.log("target address", transferToAddress);
-      console.log("target lock", transferToLock);
-      console.log("transfer amount", tansferAmount);
+      console.log('changeLock', changeLock);
+      console.log('target address', transferToAddress);
+      console.log('target lock', transferToLock);
+      console.log('transfer amount', tansferAmount);
       const { tx, txSkeleton } = buildTranferTx({
-        transferAmountBI: floatStringToShannon(tansferAmount),
-        network: network.data,
-        transferToLock,
+        transferAmountBI: floatStringToShannon(tansferAmount!),
+        network: network.data!,
+        transferToLock: transferToLock!,
         collectedCells: newFullCells,
-        changeLock: changeLock,
+        changeLock,
         isTransferAll: transferAllFlag,
       });
-      console.log("tx to sign:", tx);
+      console.log('tx to sign:', tx);
 
-      const signatures: any[] = await window.ckb.request({
-        method: "wallet_fullOwnership_signTransaction",
+      const signatures: any[] = await ckb.request({
+        method: 'wallet_fullOwnership_signTransaction',
         params: { tx },
       });
-      console.log("signatures", signatures);
-      const inputCells = txSkeleton.get("inputs").toArray();
+      console.log('signatures', signatures);
+      const inputCells = txSkeleton.get('inputs').toArray();
       const inputArgs = inputCells.map((cell) => cell.cellOutput.lock.args);
       for (let index = 0; index < signatures.length; index++) {
         const [lock, sig] = signatures[index];
@@ -224,15 +236,15 @@ export default function Home() {
           lock: sig,
         };
         const newWitness = bytes.hexify(
-          blockchain.WitnessArgs.pack(newWitnessArgs)
+          blockchain.WitnessArgs.pack(newWitnessArgs),
         );
         const inputIndex = inputArgs.findIndex((arg) => arg === lock.args);
         tx.witnesses[inputIndex] = newWitness;
       }
-      console.log("tx to send on chain", tx);
-      const rpc = new RPC(network.data.rpcUrl);
+      console.log('tx to send on chain', tx);
+      const rpc = new RPC(network.data!.rpcUrl);
       const txHash = await rpc.sendTransaction(tx);
-      console.log("txHash", txHash);
+      console.log('txHash', txHash);
       setTransferBookItems((prev) => [
         {
           txHash,
@@ -245,29 +257,29 @@ export default function Home() {
       ]);
 
       toast({
-        title: "Transaction has been sent.",
+        title: 'Transaction has been sent.',
         description: (
           <>
-            Visit{" "}
+            Visit{' '}
             <Link
               href={`https://pudge.explorer.nervos.org/transaction/${txHash}`}
               textDecor="underline"
             >
               EXPLORER
-            </Link>{" "}
+            </Link>{' '}
             to check tx status.
           </>
         ),
-        status: "success",
+        status: 'success',
         duration: 60_000,
         isClosable: true,
       });
     } catch (error) {
-      console.log("handleTransfer error", error);
+      console.log('handleTransfer error', error);
       toast({
-        title: "Error",
+        title: 'Error',
         description: error.message,
-        status: "error",
+        status: 'error',
         duration: 60_000,
         isClosable: true,
       });
@@ -284,12 +296,13 @@ export default function Home() {
       <Container>
         <div className={styles.container}>
           <Head>
-            <title>Demo Nexus</title>
+            <title>Nexus Demo</title>
             <link rel="icon" href="/favicon.ico" />
           </Head>
 
-          <Text fontSize="4xl">
-            Full Ownership Demo <DownloadInfoButton />
+          <Text fontSize="4xl" textAlign='center'>
+            Nexus Demo <DownloadInfoButton />
+            {nickName && <NameCard nickName={nickName} /> }
           </Text>
           <div className={styles.connect}>
             <Box display="inline-block" mr={4}>
@@ -303,9 +316,9 @@ export default function Home() {
                   "Connecting..."
                 ) : (
                   <>
-                    Connected to {network.data.displayName}
+                    Connected to {network.data!.displayName}
                     <CheckCircleIcon color="green.500" ml={2} />
-                    {network.data.id === "testnet" && <ClaimTestnetToken />}
+                    {network.data!.id === "testnet" && <ClaimTestnetToken />}
                   </>
                 )}
               </Badge>
@@ -338,7 +351,7 @@ export default function Home() {
 
           <FormControl>
             <FormLabel>
-              Transfer To<span style={{ color: "red" }}>*</span>:
+              Transfer To<span style={{ color: 'red' }}>*</span>:
             </FormLabel>
             <Input
               type="text"
@@ -347,7 +360,7 @@ export default function Home() {
               marginBottom={2}
             />
             <FormLabel>
-              Transfer Amount<span style={{ color: "red" }}>*</span>:
+              Transfer Amount<span style={{ color: 'red' }}>*</span>:
               <TransferTips />
             </FormLabel>
             <InputGroup width="100%">
@@ -376,7 +389,9 @@ export default function Home() {
             <Input
               type="text"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value);
+              }}
               marginBottom={2}
             />
 

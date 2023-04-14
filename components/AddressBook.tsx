@@ -1,7 +1,6 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Table,
-  TableCaption,
   TableContainer,
   Tbody,
   Td,
@@ -10,26 +9,25 @@ import {
   Tr,
   Tooltip,
   useToast,
-  Tfoot,
   Box,
-} from "@chakra-ui/react";
-import { CopyIcon } from "@chakra-ui/icons";
-import { NCell, NScript } from "../common/types";
-import { BI } from "@ckb-lumos/lumos";
-import { formatDisplayAddress, formatDisplayCapacity } from "../common/utils";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-import { Pagination } from "./Pagination";
-import { DEFAULT_PAGE_SIZE } from "../common/const";
+} from '@chakra-ui/react';
+import { CopyIcon } from '@chakra-ui/icons';
+import { type NCell, type NScript } from '../common/types';
+import { BI } from '@ckb-lumos/lumos';
+import { formatDisplayAddress, formatDisplayCapacity } from '../common/utils';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { Pagination } from './Pagination';
+import { DEFAULT_PAGE_SIZE } from '../common/const';
 
-type AddressBookProp = {
-  offChainLockInfos: NScript[];
-  onChainLockInfos: NScript[];
-  cells: NCell[];
-};
-type TableItemProp = {
-  address: string;
-  balance: string;
-};
+interface AddressBookProp {
+  offChainLockInfos: NScript[]
+  onChainLockInfos: NScript[]
+  cells: NCell[]
+}
+interface TableItemProp {
+  address: string
+  balance: string
+}
 export function AddressBook(prop: AddressBookProp) {
   const [pageIndex, setPageIndex] = React.useState(0);
   const { offChainLockInfos, onChainLockInfos, cells } = prop;
@@ -44,19 +42,19 @@ export function AddressBook(prop: AddressBookProp) {
         address,
         balance: formatDisplayCapacity(addressBalance),
       };
-    }
+    },
   );
   const toast = useToast();
-  function handleAddressClick(address: string): void {
+  function handleAddressClick(): void {
     toast({
-      title: "Copied.",
-      status: "success",
+      title: 'Copied.',
+      status: 'success',
       duration: 1000,
     });
   }
   const currentPageItems = tableItems.slice(
     pageIndex * DEFAULT_PAGE_SIZE,
-    (pageIndex + 1) * DEFAULT_PAGE_SIZE
+    (pageIndex + 1) * DEFAULT_PAGE_SIZE,
   );
 
   return (
@@ -77,7 +75,9 @@ export function AddressBook(prop: AddressBookProp) {
                 </Tooltip>
                 <CopyToClipboard
                   text={item.address}
-                  onCopy={() => handleAddressClick(item.address)}
+                  onCopy={() => {
+                    handleAddressClick();
+                  }}
                 >
                   <CopyIcon cursor="pointer" marginLeft={2} />
                 </CopyToClipboard>
@@ -90,8 +90,8 @@ export function AddressBook(prop: AddressBookProp) {
               .fill(null)
               .map((_, index) => (
                 <Tr key={index}>
-                  <Td>{"-"}</Td>
-                  <Td>{"-"}</Td>
+                  <Td>{'-'}</Td>
+                  <Td>{'-'}</Td>
                 </Tr>
               ))}
         </Tbody>

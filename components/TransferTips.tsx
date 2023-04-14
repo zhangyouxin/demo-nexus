@@ -1,6 +1,6 @@
-import * as React from "react";
-import { Text, Link } from "@chakra-ui/react";
-import { BaseIconButton } from "./BaseIconButton";
+import * as React from 'react';
+import { Text, Link } from '@chakra-ui/react';
+import { BaseIconButton } from './BaseIconButton';
 
 export function TransferTips() {
   return (
@@ -11,7 +11,7 @@ export function TransferTips() {
           about 184.5 billion CKBs. <br />
           The minimum transfer amount is 61 CKBs. <br />
           That is because the CKB blockchain uses Cell model, you need CKB
-          tokens to store token info in cells, minimum cell costs 61 CKBs.{" "}
+          tokens to store token info in cells, minimum cell costs 61 CKBs.{' '}
           <br />
           <Link
             href="https://docs.nervos.org/docs/basics/concepts/cryptowallet/#minimum-requirements-of-a-ckb-transfer"

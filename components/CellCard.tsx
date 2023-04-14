@@ -1,3 +1,4 @@
+import * as React from 'react';
 import {
   Box,
   Badge,
@@ -7,9 +8,9 @@ import {
   AccordionPanel,
   Accordion,
   Text,
-} from "@chakra-ui/react";
-import { BI } from "@ckb-lumos/lumos";
-import { NCell } from "../common/types";
+} from '@chakra-ui/react';
+import { BI } from '@ckb-lumos/lumos';
+import { type NCell } from '../common/types';
 
 export function CellCard(prop: NCell) {
   const property = {
@@ -87,7 +88,7 @@ export function CellCard(prop: NCell) {
                   fontSize="xs"
                   display="flex"
                 >
-                  <Text>CODE HASH:</Text>{" "}
+                  <Text>CODE HASH:</Text>{' '}
                   <Text width="250px">{property.type.codeHash}</Text>
                 </Box>
                 <Box
@@ -98,7 +99,7 @@ export function CellCard(prop: NCell) {
                   fontSize="xs"
                   display="flex"
                 >
-                  <Text>HASH TYPE:</Text>{" "}
+                  <Text>HASH TYPE:</Text>{' '}
                   <Text width="250px">{property.type.hashType}</Text>
                 </Box>
                 <Box
@@ -109,7 +110,7 @@ export function CellCard(prop: NCell) {
                   fontSize="xs"
                   display="flex"
                 >
-                  <Text>ARGS:</Text>{" "}
+                  <Text>ARGS:</Text>{' '}
                   <Text width="250px">{property.type.args}</Text>
                 </Box>
               </AccordionPanel>

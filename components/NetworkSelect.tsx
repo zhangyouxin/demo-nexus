@@ -15,7 +15,7 @@ export function NetworkSelect() {
       {!isEmpty(networkList) && (
         <RadioGroup defaultValue={network.id} onChange={handleNetworkChange}>
           <Stack>
-            {networkList.map((network) => {
+            {networkList!.map((network) => {
               return (
                 <Radio key={network.id} value={network.id}>
                   {network.displayName}
