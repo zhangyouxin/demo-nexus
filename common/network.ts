@@ -5,6 +5,7 @@ export interface NetworkConfig {
   displayName: string;
   networkName: string;
   rpcUrl: string;
+  enable?: boolean;
 }
 
 export interface NetworkScriptConfig {
@@ -15,16 +16,17 @@ export interface NetworkInfo extends NetworkConfig, NetworkScriptConfig {}
 
 export const DEFAULT_NETWORKS: NetworkConfig[] = [
   {
-    id: "mainnet",
-    networkName: "ckb",
-    displayName: "Mainnet",
-    rpcUrl: "https://mainnet.ckb.dev",
-  },
-  {
     id: "testnet",
     networkName: "ckb_testnet",
     displayName: "Testnet",
     rpcUrl: "https://testnet.ckb.dev",
+    enable: true,
+  },
+  {
+    id: "mainnet",
+    networkName: "ckb",
+    displayName: "Mainnet",
+    rpcUrl: "https://mainnet.ckb.dev",
   },
   {
     id: "devnet",

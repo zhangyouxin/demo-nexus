@@ -45,11 +45,11 @@ import {
   formatInputNumber,
   validateTransferAmount,
 } from "../common/utils";
-import { DEFAULT_TX_FEE, MIN_TRANSFER_AMOUNT } from "../common/const";
-import { useNetwork } from "../hooks/useNetwork";
 import { ClaimTestnetToken } from "../components/ClaimTestnetToken";
 import { TransferTips } from "../components/TransferTips";
 import { buildTranferTx } from "../common/txBuilder";
+import { NetworkSelect } from "../components/NetworkSelect";
+import { useNetworkConfig } from "../hooks/useNetworkConfig";
 
 declare global {
   interface Window {
@@ -74,7 +74,7 @@ export default function Home() {
     []
   );
   const [onChainLockInfos, setOnChainLockInfos] = useState<Array<NScript>>([]);
-  const network = useNetwork();
+  const network = useNetworkConfig();
 
   const toast = useToast();
   useEffect(() => {
@@ -83,6 +83,16 @@ export default function Home() {
   useEffect(() => {
     handleRefresh();
   }, [ckb]);
+
+  async function handleConnect() {
+    const windowCKB = (window as any).ckb;
+    if (!windowCKB) {
+      console.log("no nexus wallet found!");
+      return;
+    }
+    const ckb = await windowCKB.enable();
+    setCkb(ckb);
+  }
 
   function handleTransferAll() {
     setTansferAmount(formatDisplayCapacity(balance));
@@ -265,16 +275,6 @@ export default function Home() {
     setTransfering(false);
   }
 
-  async function handleConnect() {
-    const windowCKB = (window as any).ckb;
-    if (!windowCKB) {
-      console.log("no nexus wallet found!");
-      return;
-    }
-    const ckb = await windowCKB.enable();
-    setCkb(ckb);
-  }
-
   function parseNumber(valueString: string): React.SetStateAction<number> {
     return Number(valueString);
   }
@@ -292,6 +292,11 @@ export default function Home() {
             Full Ownership Demo <DownloadInfoButton />
           </Text>
           <div className={styles.connect}>
+            <Box display="inline-block" mr={4}>
+              <NModal title="Switch Network" buttonText="Switch" size="sm">
+                <NetworkSelect />
+              </NModal>
+            </Box>
             {!!ckb ? (
               <Badge fontSize="xl" fontStyle="italic">
                 {network.loading ? (
