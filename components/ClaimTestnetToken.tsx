@@ -1,10 +1,11 @@
-import * as React from "react";
-import { Text, Link } from "@chakra-ui/react";
-import { BaseIconButton } from "./BaseIconButton";
+import * as React from 'react';
+import { Text, Link } from '@chakra-ui/react';
+import { BaseIconButton } from './BaseIconButton';
 
 export function ClaimTestnetToken() {
   return (
     <BaseIconButton
+      title='Claim Testnet Token'
       description={
         <Text>
           You can open the Address Book below and copy some addresss, then claim

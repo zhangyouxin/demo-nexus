@@ -1,7 +1,6 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Table,
-  TableCaption,
   TableContainer,
   Tbody,
   Td,
@@ -13,20 +12,18 @@ import {
   Link,
   Button,
   Box,
-} from "@chakra-ui/react";
-import {
-  formatDisplayAddress,
-  formatDisplayCapacity,
-  formatDisplayHash,
-} from "../common/utils";
-import { Pagination } from "./Pagination";
-import { DEFAULT_PAGE_SIZE } from "../common/const";
-import { useLocalStorage } from "react-use";
-import { TransferBookItem } from "../common/types";
+} from '@chakra-ui/react';
+import { formatDisplayAddress } from '../common/utils';
+import { Pagination } from './Pagination';
+import { DEFAULT_PAGE_SIZE } from '../common/const';
+import { useLocalStorage } from 'react-use';
+import { type TransferBookItem } from '../common/types';
 
 export function TransferBook() {
-  const [items = [], setTransferBookItems, removeTransferBookItems] =
-    useLocalStorage<TransferBookItem[]>("nexus-transfer-book", []);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [items = [], setTransferBookItems, removeTransferBookItems] = useLocalStorage<
+  TransferBookItem[]
+  >('nexus-transfer-book', []);
   const [pageIndex, setPageIndex] = React.useState(0);
   const currentPageItems = items.slice(pageIndex * 10, (pageIndex + 1) * 10);
 
@@ -44,7 +41,7 @@ export function TransferBook() {
         </Thead>
         <Tbody>
           {currentPageItems.map((item, index) => (
-            <Tr key={item.to + index}>
+            <Tr key={`${item.to}${index}`}>
               <Td>
                 <Tooltip label={item.to}>
                   {formatDisplayAddress(item.to)}
@@ -58,8 +55,8 @@ export function TransferBook() {
                     overflow="hidden"
                     maxWidth="200px"
                   >
-                    {" "}
-                    {item.description || "-"}
+                    {' '}
+                    {item.description || '-'}
                   </Text>
                 </Tooltip>
               </Td>
@@ -71,7 +68,7 @@ export function TransferBook() {
                   <Text fontStyle="initial" fontWeight={500}>
                     Explorer
                   </Text>
-                </Link>{" "}
+                </Link>{' '}
               </Td>
             </Tr>
           ))}
@@ -80,11 +77,11 @@ export function TransferBook() {
               .fill(null)
               .map((_, index) => (
                 <Tr key={index}>
-                  <Td>{"-"}</Td>
-                  <Td>{"-"}</Td>
-                  <Td>{"-"}</Td>
-                  <Td>{"-"}</Td>
-                  <Td>{"-"}</Td>
+                  <Td>{'-'}</Td>
+                  <Td>{'-'}</Td>
+                  <Td>{'-'}</Td>
+                  <Td>{'-'}</Td>
+                  <Td>{'-'}</Td>
                 </Tr>
               ))}
         </Tbody>
@@ -96,8 +93,8 @@ export function TransferBook() {
           totalCount={items.length}
         />
         <Button onClick={removeTransferBookItems} colorScheme="red">
-          {" "}
-          Reset Transfer Book{" "}
+          {' '}
+          Reset Transfer Book{' '}
         </Button>
       </Box>
     </TableContainer>
