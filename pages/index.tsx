@@ -88,7 +88,7 @@ export default function Home(): JSX.Element {
   }, []);
   useEffect(() => {
     void handleRefresh();
-  }, [nickName, ckb]);
+  }, [nickName, ckb, network.data]);
 
   function handleTransferAll() {
     setTansferAmount(formatDisplayCapacity(balance));
