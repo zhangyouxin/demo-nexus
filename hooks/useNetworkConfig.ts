@@ -10,7 +10,6 @@ export const useNetworkConfig = () => {
   const [data, setData] = useState<NetworkInfo>();
   const [error, setError] = useState(null);
   const { network } = useNetwork();
-  console.log('network', network);
   useEffect(() => {
     async function fetchData() {
       try {
